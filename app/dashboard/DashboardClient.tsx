@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { signOut } from "next-auth/react"
 import Link from "next/link"
+import { COUNTRIES } from "@/lib/countries"
 
 // ── Types ──────────────────────────────────────────────
 
@@ -96,6 +97,9 @@ export default function DashboardClient({
   const [dirSearch, setDirSearch] = useState("")
   const [dirIndustry, setDirIndustry] = useState("")
   const [dirTier, setDirTier] = useState("")
+  const [dirCountry, setDirCountry] = useState("")
+  const [dirCountrySearch, setDirCountrySearch] = useState("")
+  const [dirCountryOpen, setDirCountryOpen] = useState(false)
   const searchTimer = useRef<NodeJS.Timeout>()
 
   // Posts state
@@ -126,12 +130,13 @@ export default function DashboardClient({
 
   // ── Data fetchers ──────────────────────────────────
 
-  const fetchDirectory = useCallback(async (search: string, industry: string, tier: string, cursor?: string) => {
+  const fetchDirectory = useCallback(async (search: string, industry: string, tier: string, country: string, cursor?: string) => {
     setDirLoading(true)
     const params = new URLSearchParams()
     if (search) params.set("search", search)
     if (industry) params.set("industry", industry)
     if (tier) params.set("tier", tier)
+    if (country) params.set("country", country)
     if (cursor) params.set("cursor", cursor)
     const res = await fetch(`/api/members?${params}`)
     const data = await res.json()
@@ -157,7 +162,7 @@ export default function DashboardClient({
   // Load data when section activates
   useEffect(() => {
     if (active === "directory" && dirMembers.length === 0) {
-      fetchDirectory("", "", "")
+      fetchDirectory("", "", "", "")
     }
     if (active === "helpme" && helpPosts.length === 0) {
       fetchPosts("HELPME")
@@ -171,9 +176,9 @@ export default function DashboardClient({
   useEffect(() => {
     clearTimeout(searchTimer.current)
     searchTimer.current = setTimeout(() => {
-      if (active === "directory") fetchDirectory(dirSearch, dirIndustry, dirTier)
+      if (active === "directory") fetchDirectory(dirSearch, dirIndustry, dirTier, dirCountry)
     }, 350)
-  }, [dirSearch, dirIndustry, dirTier, active, fetchDirectory])
+  }, [dirSearch, dirIndustry, dirTier, dirCountry, active, fetchDirectory])
 
   // ── Actions ────────────────────────────────────────
 
@@ -477,6 +482,52 @@ export default function DashboardClient({
                   <option value="mj">MJ</option>
                   <option value="goat">GOAT</option>
                 </select>
+                {/* Country combobox — type to filter, select from list */}
+                <div style={{ position: "relative", width: 180 }}>
+                  <input
+                    className="form-input"
+                    placeholder="All countries…"
+                    value={dirCountryOpen ? dirCountrySearch : dirCountry}
+                    autoComplete="off"
+                    onFocus={() => { setDirCountryOpen(true); setDirCountrySearch("") }}
+                    onChange={(e) => { setDirCountrySearch(e.target.value); setDirCountryOpen(true) }}
+                    onBlur={() => setTimeout(() => setDirCountryOpen(false), 150)}
+                  />
+                  {dirCountryOpen && (
+                    <div style={{
+                      position: "absolute", top: "100%", left: 0, right: 0, zIndex: 200,
+                      background: "var(--bg2)", border: "1px solid var(--border)",
+                      borderRadius: 4, maxHeight: 260, overflowY: "auto", marginTop: 2,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                    }}>
+                      <div
+                        onMouseDown={() => { setDirCountry(""); setDirCountryOpen(false) }}
+                        style={{ padding: "9px 14px", fontSize: 12, cursor: "pointer", color: "var(--text-muted)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg3)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        All countries
+                      </div>
+                      {COUNTRIES.filter((c) =>
+                        c.toLowerCase().includes(dirCountrySearch.toLowerCase())
+                      ).map((c) => (
+                        <div
+                          key={c}
+                          onMouseDown={() => { setDirCountry(c); setDirCountrySearch(c); setDirCountryOpen(false) }}
+                          style={{
+                            padding: "9px 14px", fontSize: 13, cursor: "pointer",
+                            background: dirCountry === c ? "var(--bg3)" : "transparent",
+                            color: dirCountry === c ? "var(--gold)" : "var(--text)",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg3)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = dirCountry === c ? "var(--bg3)" : "transparent")}
+                        >
+                          {c}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {dirLoading && dirMembers.length === 0 ? (
@@ -511,7 +562,7 @@ export default function DashboardClient({
                   </div>
                   {dirCursor && (
                     <div style={{ textAlign: "center", marginTop: 24 }}>
-                      <button className="btn btn-ghost" onClick={() => fetchDirectory(dirSearch, dirIndustry, dirTier, dirCursor)} disabled={dirLoading}>
+                      <button className="btn btn-ghost" onClick={() => fetchDirectory(dirSearch, dirIndustry, dirTier, dirCountry, dirCursor)} disabled={dirLoading}>
                         {dirLoading ? "Loading…" : `Load more · ${dirTotal - dirMembers.length} remaining`}
                       </button>
                     </div>

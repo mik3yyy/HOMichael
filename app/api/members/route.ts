@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   const search = searchParams.get("search") || ""
   const industry = searchParams.get("industry") || ""
   const tier = searchParams.get("tier") || ""
+  const country = searchParams.get("country") || ""
   const cursor = searchParams.get("cursor") || undefined
   const take = 12
 
@@ -27,6 +28,7 @@ export async function GET(req: NextRequest) {
       ],
     }),
     ...(industry && { industry }),
+    ...(country && { country }),
     ...(tier === "michael" && { tier: "MICHAEL" }),
     ...(tier === "inspired" && { tier: "INSPIRED" }),
     ...(tier === "mike" && { tierLevel: "MIKE" }),

@@ -1,8 +1,9 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
+import { COUNTRIES } from "@/lib/countries"
 
 const INDUSTRIES = [
   "Tech", "Finance", "Creative", "Health", "Property",
@@ -20,6 +21,9 @@ export default function ProfileForm({
   const { update } = useSession()
   const [step, setStep] = useState(1)
   const [saving, setSaving] = useState(false)
+  const [countrySearch, setCountrySearch] = useState("")
+  const [countryOpen, setCountryOpen] = useState(false)
+  const countryRef = useRef<HTMLDivElement>(null)
 
   const [form, setForm] = useState({
     city: "",
@@ -77,12 +81,50 @@ export default function ProfileForm({
           </div>
           <div className={styles.field}>
             <label>Country</label>
-            <input
-              className="form-input"
-              placeholder="Nigeria, UK, USA…"
-              value={form.country}
-              onChange={(e) => set("country", e.target.value)}
-            />
+            <div ref={countryRef} style={{ position: "relative" }}>
+              <input
+                className="form-input"
+                placeholder="Search country…"
+                value={countryOpen ? countrySearch : form.country}
+                autoComplete="off"
+                onFocus={() => { setCountryOpen(true); setCountrySearch("") }}
+                onChange={(e) => { setCountrySearch(e.target.value); setCountryOpen(true) }}
+                onBlur={() => setTimeout(() => {
+                  setCountryOpen(false)
+                  if (!COUNTRIES.includes(countrySearch) && countrySearch) setCountrySearch("")
+                }, 150)}
+              />
+              {countryOpen && (
+                <div style={{
+                  position: "absolute", top: "100%", left: 0, right: 0, zIndex: 200,
+                  background: "var(--bg2)", border: "1px solid var(--border)",
+                  borderRadius: 4, maxHeight: 220, overflowY: "auto", marginTop: 2,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                }}>
+                  {COUNTRIES.filter((c) =>
+                    c.toLowerCase().includes(countrySearch.toLowerCase())
+                  ).length === 0 ? (
+                    <div style={{ padding: "10px 14px", fontSize: 12, color: "var(--text-muted)" }}>No countries found</div>
+                  ) : COUNTRIES.filter((c) =>
+                    c.toLowerCase().includes(countrySearch.toLowerCase())
+                  ).map((c) => (
+                    <div
+                      key={c}
+                      onMouseDown={() => { set("country", c); setCountrySearch(c); setCountryOpen(false) }}
+                      style={{
+                        padding: "9px 14px", fontSize: 13, cursor: "pointer",
+                        background: form.country === c ? "var(--bg3)" : "transparent",
+                        color: form.country === c ? "var(--gold)" : "var(--text)",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg3)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = form.country === c ? "var(--bg3)" : "transparent")}
+                    >
+                      {c}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className={styles.field}>
             <label>Industry</label>
