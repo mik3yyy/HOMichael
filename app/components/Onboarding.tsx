@@ -139,27 +139,35 @@ const TOTAL_QUESTIONS = 8 // excludes intro, name, reveal
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function Onboarding() {
-  const [screenIdx, setScreenIdx] = useState(() => {
-    if (typeof window === "undefined") return 0
-    try { return parseInt(sessionStorage.getItem("hom_screen") || "0", 10) || 0 } catch { return 0 }
-  })
+  const [screenIdx, setScreenIdx] = useState(0)
   const [visible, setVisible] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
-  const [firstName, setFirstName] = useState(() => {
-    if (typeof window === "undefined") return ""
-    try { return sessionStorage.getItem("hom_name") || "" } catch { return "" }
-  })
+  const [firstName, setFirstName] = useState("")
   const [showSignIn, setShowSignIn] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  // Persist progress to sessionStorage
+  // Restore from sessionStorage after client mount
   useEffect(() => {
+    try {
+      const savedScreen = sessionStorage.getItem("hom_screen")
+      const savedName = sessionStorage.getItem("hom_name")
+      if (savedScreen) setScreenIdx(parseInt(savedScreen, 10) || 0)
+      if (savedName) setFirstName(savedName)
+    } catch {}
+    setHydrated(true)
+  }, [])
+
+  // Save screen and name whenever they change (only after hydration)
+  useEffect(() => {
+    if (!hydrated) return
     try { sessionStorage.setItem("hom_screen", String(screenIdx)) } catch {}
-  }, [screenIdx])
+  }, [screenIdx, hydrated])
 
   useEffect(() => {
+    if (!hydrated) return
     try { sessionStorage.setItem("hom_name", firstName) } catch {}
-  }, [firstName])
+  }, [firstName, hydrated])
 
   const screen = SCREENS[screenIdx]
   const isLast = screenIdx === SCREENS.length - 1
@@ -210,8 +218,24 @@ export default function Onboarding() {
         />
       )}
 
-      {/* Logo */}
-      <div className={styles.logo}>House of Michaels</div>
+      {/* Logo — only on intro; replaced by Start over on other screens */}
+      {screenIdx === 0 && <div className={styles.logo}>House of Michaels</div>}
+
+      {/* Start over — only show after intro screen */}
+      {screenIdx > 0 && (
+        <button
+          className={styles.startOver}
+          onClick={() => {
+            try { sessionStorage.removeItem("hom_screen"); sessionStorage.removeItem("hom_name") } catch {}
+            setScreenIdx(0)
+            setFirstName("")
+            setSelected(null)
+            setVisible(true)
+          }}
+        >
+          ← Start over
+        </button>
+      )}
 
       {/* Sign in link */}
       <button className={styles.signInLink} onClick={() => setShowSignIn(true)}>

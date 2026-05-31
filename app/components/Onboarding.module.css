@@ -477,6 +477,26 @@
   transform: translateY(-1px);
 }
 
+/* ── START OVER ── */
+.startOver {
+  position: fixed;
+  top: 24px;
+  left: 32px;
+  background: transparent;
+  border: none;
+  color: #3a3530;
+  font-family: "Syne", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  z-index: 200;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+.startOver:hover { color: #7a7570; }
+
 /* ── SIGN IN LINK (top-right) ── */
 .signInLink {
   position: fixed;
