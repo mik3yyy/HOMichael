@@ -376,7 +376,7 @@ export default function DashboardClient({
           <div className="topbar-right">
             <span className="badge-tier">{tLabel}</span>
             <button className="btn btn-outline" onClick={() => setActive("helpme")} style={{ padding: "6px 14px", fontSize: 10 }}>+ Help Me</button>
-            <button className="btn btn-ghost" onClick={() => signOut({ callbackUrl: "/" })} style={{ padding: "6px 14px", fontSize: 10 }}>Sign out</button>
+            <button className="btn btn-ghost" onClick={() => { if (confirm("Are you sure you want to sign out?")) signOut({ callbackUrl: "/" }) }} style={{ padding: "6px 14px", fontSize: 10 }}>Sign out</button>
           </div>
         </div>
 
