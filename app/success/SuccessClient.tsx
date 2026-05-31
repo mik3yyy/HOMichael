@@ -1,7 +1,7 @@
 "use client"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import styles from "./page.module.css"
 
 export default function SuccessClient({
@@ -15,18 +15,28 @@ export default function SuccessClient({
 }) {
   const { update } = useSession()
   const router = useRouter()
-  const [countdown, setCountdown] = useState(4)
+  const [countdown, setCountdown] = useState(3)
+  const redirected = useRef(false)
 
   const destination = isNewMember ? "/profile/setup" : "/dashboard"
 
-  useEffect(() => {
-    update() // refresh JWT so isMember becomes true
+  function go() {
+    if (!redirected.current) {
+      redirected.current = true
+      router.push(destination)
+    }
+  }
 
+  useEffect(() => {
+    // Refresh the JWT so isMember becomes true, then redirect immediately
+    update().then(go)
+
+    // Countdown display — also redirects when it hits 0 as a fallback
     const timer = setInterval(() => {
       setCountdown((n) => {
         if (n <= 1) {
           clearInterval(timer)
-          router.push(destination)
+          go()
           return 0
         }
         return n - 1
@@ -34,12 +44,13 @@ export default function SuccessClient({
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [update, router, destination])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const isMichael = tier === "MICHAEL"
 
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={go} style={{ cursor: "pointer" }}>
       <div className={styles.mark}>◈</div>
 
       <h1 className={styles.heading}>
@@ -58,9 +69,11 @@ export default function SuccessClient({
       </div>
 
       <div className={styles.redirect}>
-        {isNewMember
-          ? `Setting up your profile in ${countdown}…`
-          : `Entering the house in ${countdown}…`}
+        {countdown > 0
+          ? isNewMember
+            ? `Setting up your profile in ${countdown}…`
+            : `Entering the house in ${countdown}…`
+          : "Entering…"}
       </div>
     </div>
   )
