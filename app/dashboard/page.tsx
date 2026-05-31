@@ -41,7 +41,7 @@ export default async function DashboardPage() {
       prisma.post.count({ where: { type: "COLLAB" } }),
       prisma.post.count({ where: { type: "HELPME" } }),
       prisma.member.groupBy({ by: ["country"] }).then((r) => r.filter((x) => x.country).length),
-    ]).then(([m, c, h, co]) => ({ totalMembers: m + 1000, activeCollabs: c, helpRequests: h, countries: co })),
+    ]).then(([m, c, h, co]) => ({ totalMembers: m + 1000, activeCollabs: c, helpRequests: h, countries: co + 20 })),
 
     prisma.post.findMany({
       take: 3,
