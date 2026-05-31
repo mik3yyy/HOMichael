@@ -477,42 +477,75 @@
   transform: translateY(-1px);
 }
 
-/* ── INTRO SIGN-IN ── */
-.introSignInDivider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  max-width: 320px;
-  margin-top: 32px;
-  opacity: 0;
-  animation: ob-up 0.5s 1.7s ease forwards;
-}
-.introSignInDivider::before,
-.introSignInDivider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: rgba(255,255,255,0.06);
-}
-.introSignInDivider span {
+/* ── SIGN IN LINK (top-right) ── */
+.signInLink {
+  position: fixed;
+  top: 22px;
+  right: 28px;
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.25);
+  color: rgba(201,168,76,0.7);
+  font-family: "Syne", sans-serif;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #3a3530;
-  white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 2px;
+  cursor: pointer;
+  z-index: 200;
+  transition: border-color 0.2s, color 0.2s;
+}
+.signInLink:hover {
+  border-color: rgba(201,168,76,0.6);
+  color: #c9a84c;
 }
 
-.introSignInBtns {
+/* ── SIGN IN MODAL ── */
+.signInBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.signInModal {
+  background: #0f0f0f;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 4px;
+  padding: 40px 32px 32px;
+  width: 100%;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 320px;
-  opacity: 0;
-  animation: ob-up 0.5s 1.9s ease forwards;
+  gap: 12px;
 }
+.signInModalTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: #e8e4dc;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.signInClose {
+  background: transparent;
+  border: none;
+  color: #3a3530;
+  font-family: "Syne", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 8px;
+  margin-top: 4px;
+  transition: color 0.2s;
+}
+.signInClose:hover { color: #7a7570; }
 
 /* ── KEYFRAMES (prefixed to avoid globals.css conflict) ── */
 @keyframes ob-up {
