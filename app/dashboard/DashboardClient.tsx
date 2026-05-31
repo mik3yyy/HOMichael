@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { signOut } from "next-auth/react"
 import Link from "next/link"
 import { COUNTRIES } from "@/lib/countries"
+import { INDUSTRIES } from "@/lib/industries"
 
 // ── Types ──────────────────────────────────────────────
 
@@ -470,7 +471,7 @@ export default function DashboardClient({
                 />
                 <select className="form-select" style={{ width: 160 }} value={dirIndustry} onChange={(e) => setDirIndustry(e.target.value)}>
                   <option value="">All industries</option>
-                  {["Tech","Finance","Creative","Health","Property","Education","Consulting","Media","Legal","E-commerce","Other"].map((i) => (
+                  {INDUSTRIES.map((i) => (
                     <option key={i}>{i}</option>
                   ))}
                 </select>

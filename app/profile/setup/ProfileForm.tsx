@@ -4,11 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
 import { COUNTRIES } from "@/lib/countries"
-
-const INDUSTRIES = [
-  "Tech", "Finance", "Creative", "Health", "Property",
-  "Education", "Consulting", "Media", "Legal", "E-commerce", "Other",
-]
+import { INDUSTRIES } from "@/lib/industries"
 
 export default function ProfileForm({
   firstName,
