@@ -139,12 +139,27 @@ const TOTAL_QUESTIONS = 8 // excludes intro, name, reveal
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function Onboarding() {
-  const [screenIdx, setScreenIdx] = useState(0)
+  const [screenIdx, setScreenIdx] = useState(() => {
+    if (typeof window === "undefined") return 0
+    try { return parseInt(sessionStorage.getItem("hom_screen") || "0", 10) || 0 } catch { return 0 }
+  })
   const [visible, setVisible] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
-  const [firstName, setFirstName] = useState("")
+  const [firstName, setFirstName] = useState(() => {
+    if (typeof window === "undefined") return ""
+    try { return sessionStorage.getItem("hom_name") || "" } catch { return "" }
+  })
   const [showSignIn, setShowSignIn] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
+
+  // Persist progress to sessionStorage
+  useEffect(() => {
+    try { sessionStorage.setItem("hom_screen", String(screenIdx)) } catch {}
+  }, [screenIdx])
+
+  useEffect(() => {
+    try { sessionStorage.setItem("hom_name", firstName) } catch {}
+  }, [firstName])
 
   const screen = SCREENS[screenIdx]
   const isLast = screenIdx === SCREENS.length - 1
@@ -210,7 +225,7 @@ export default function Onboarding() {
             <div className={styles.signInModalTitle}>Sign in to House of Michaels</div>
             <button
               className={`${styles.loginBtn} ${styles.loginBtnGoogle}`}
-              onClick={() => signIn("google", { callbackUrl: "/join" })}
+              onClick={() => { try { sessionStorage.removeItem("hom_screen"); sessionStorage.removeItem("hom_name") } catch {}; signIn("google", { callbackUrl: "/join" }) }}
             >
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
                 <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -222,7 +237,7 @@ export default function Onboarding() {
             </button>
             <button
               className={styles.loginBtn}
-              onClick={() => signIn("linkedin", { callbackUrl: "/join" })}
+              onClick={() => { try { sessionStorage.removeItem("hom_screen"); sessionStorage.removeItem("hom_name") } catch {}; signIn("linkedin", { callbackUrl: "/join" }) }}
             >
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
                 <rect width="18" height="18" rx="2" fill="#0A66C2"/>
@@ -377,7 +392,7 @@ export default function Onboarding() {
             <div className={styles.loginGroup}>
               <button
                 className={`${styles.loginBtn} ${styles.loginBtnGoogle}`}
-                onClick={() => signIn("google", { callbackUrl: "/join" })}
+                onClick={() => { try { sessionStorage.removeItem("hom_screen"); sessionStorage.removeItem("hom_name") } catch {}; signIn("google", { callbackUrl: "/join" }) }}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -390,7 +405,7 @@ export default function Onboarding() {
 
               <button
                 className={styles.loginBtn}
-                onClick={() => signIn("linkedin", { callbackUrl: "/join" })}
+                onClick={() => { try { sessionStorage.removeItem("hom_screen"); sessionStorage.removeItem("hom_name") } catch {}; signIn("linkedin", { callbackUrl: "/join" }) }}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <rect width="18" height="18" rx="2" fill="#0A66C2"/>
