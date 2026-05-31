@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { stripe, stripeWebhookSecret } from "@/lib/stripe"
 import { prisma } from "@/lib/db"
 import { generateReferralCode, creditReferrer } from "@/lib/referral"
+import { getMichaelName } from "@/lib/michael-names"
 import type Stripe from "stripe"
 
 export async function POST(req: NextRequest) {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     const meta = session.metadata
 
     if (meta?.email && meta?.tier) {
-      const firstName = (meta.name || meta.email).trim().split(/\s+/)[0]
+      const firstName = getMichaelName(meta.name || meta.email)
 
       const member = await prisma.member.upsert({
         where: { email: meta.email },

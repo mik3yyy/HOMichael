@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/db"
-import { getFirstName } from "@/lib/michael-names"
+import { getMichaelName } from "@/lib/michael-names"
 import { generateReferralCode, creditReferrer } from "@/lib/referral"
 import SuccessClient from "./SuccessClient"
 import styles from "./page.module.css"
@@ -35,7 +35,7 @@ export default async function SuccessPage({
   const email = meta.email || session.user.email!
   const name = meta.name || session.user.name || ""
   const tier = meta.tier || "MICHAEL"
-  const firstName = getFirstName(name || email)
+  const firstName = getMichaelName(name || email)
 
   // Upsert member — webhook may have already created it
   let isNewMember = false

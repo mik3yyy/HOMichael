@@ -59,3 +59,12 @@ export function getPriceCents(tier: "MICHAEL" | "INSPIRED"): number {
 export function getFirstName(fullName: string): string {
   return (fullName || "").trim().split(/\s+/)[0] || fullName
 }
+
+// Returns the Michael-variant part of a full name if one exists,
+// otherwise returns the first name. Ensures personalisation always
+// highlights the Michael name (e.g. "Michael" from "Chibuikem Michael Okpechi").
+export function getMichaelName(fullName: string): string {
+  const parts = (fullName || "").trim().split(/\s+/)
+  const michaelPart = parts.find((p) => MICHAEL_VARIANTS.has(normalize(p)))
+  return michaelPart ?? parts[0] ?? fullName
+}

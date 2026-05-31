@@ -22,7 +22,7 @@ function isMichaelName(name: string) {
 
 // ── Screen definitions ────────────────────────────────────────────────────
 
-type ScreenType = "intro" | "choice" | "statement" | "name" | "reveal"
+type ScreenType = "intro" | "choice" | "statement" | "signin"
 
 interface ScreenDef {
   type: ScreenType
@@ -118,19 +118,10 @@ const SCREENS: ScreenDef[] = [
     ],
   },
   {
-    type: "statement",
+    type: "signin",
     eyebrow: "08 — 08",
-    heading: "Welcome to the circle.",
-    body: "The House of Michaels is not a social network. It is not a course. It is a <em>private circle</em> of builders who found each other through one name. Every Michael here is working on something real. They help each other, hold each other accountable, and build together. One house. One name. For life.",
-    cta: "Enter the House →",
-  },
-  {
-    type: "name",
-    heading: "One last thing.",
-    subheading: "What's your first name?",
-  },
-  {
-    type: "reveal",
+    heading: "You're ready.",
+    body: "Sign in to see your place in the house and your membership price. One-time. Lifetime.",
   },
 ]
 
@@ -142,7 +133,6 @@ export default function Onboarding() {
   const [screenIdx, setScreenIdx] = useState(0)
   const [visible, setVisible] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
-  const [firstName, setFirstName] = useState("")
   const [showSignIn, setShowSignIn] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
@@ -151,23 +141,16 @@ export default function Onboarding() {
   useEffect(() => {
     try {
       const savedScreen = sessionStorage.getItem("hom_screen")
-      const savedName = sessionStorage.getItem("hom_name")
       if (savedScreen) setScreenIdx(parseInt(savedScreen, 10) || 0)
-      if (savedName) setFirstName(savedName)
     } catch {}
     setHydrated(true)
   }, [])
 
-  // Save screen and name whenever they change (only after hydration)
+  // Save screen whenever it changes (only after hydration)
   useEffect(() => {
     if (!hydrated) return
     try { sessionStorage.setItem("hom_screen", String(screenIdx)) } catch {}
   }, [screenIdx, hydrated])
-
-  useEffect(() => {
-    if (!hydrated) return
-    try { sessionStorage.setItem("hom_name", firstName) } catch {}
-  }, [firstName, hydrated])
 
   const screen = SCREENS[screenIdx]
   const isLast = screenIdx === SCREENS.length - 1
@@ -178,13 +161,6 @@ export default function Onboarding() {
     : screenIdx >= SCREENS.length - 1
     ? 100
     : Math.round(((screenIdx) / (SCREENS.length - 2)) * 100)
-
-  // Focus name input when on name screen
-  useEffect(() => {
-    if (screen.type === "name" && nameRef.current) {
-      setTimeout(() => nameRef.current?.focus(), 500)
-    }
-  }, [screen.type])
 
   function transition(cb: () => void) {
     setVisible(false)
@@ -206,8 +182,6 @@ export default function Onboarding() {
     setTimeout(advance, 720)
   }
 
-  const isMichael = isMichaelName(firstName)
-
   return (
     <div className={styles.page}>
       {/* Progress bar */}
@@ -226,9 +200,8 @@ export default function Onboarding() {
         <button
           className={styles.startOver}
           onClick={() => {
-            try { sessionStorage.removeItem("hom_screen"); sessionStorage.removeItem("hom_name") } catch {}
+            try { sessionStorage.removeItem("hom_screen") } catch {}
             setScreenIdx(0)
-            setFirstName("")
             setSelected(null)
             setVisible(true)
           }}
@@ -335,83 +308,13 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* ── NAME INPUT ── */}
-        {screen.type === "name" && (
-          <div className={styles.nameWrap}>
-            <h2 className={styles.heading}>{screen.heading}</h2>
-            <p className={styles.subheading}>{screen.subheading}</p>
-
-            <div className={styles.nameInputWrap}>
-              <input
-                ref={nameRef}
-                type="text"
-                className={`${styles.nameInput}${isMichael && firstName.length > 1 ? ` ${styles.isMichael}` : ""}`}
-                placeholder="your name"
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && firstName.trim().length > 0 && advance()}
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </div>
-
-            <p className={`${styles.nameHint}${isMichael && firstName.length > 1 ? ` ${styles.goldHint}` : ""}`}>
-              {firstName.length > 1
-                ? isMichael
-                  ? "◈ That's a Michael name."
-                  : "Inspired by the name — welcome."
-                : "Type your first name, then press continue"}
-            </p>
-
-            <button
-              className={styles.cta}
-              onClick={advance}
-              disabled={!firstName.trim()}
-            >
-              See your price →
-            </button>
-          </div>
-        )}
-
-        {/* ── REVEAL ── */}
-        {screen.type === "reveal" && (
+        {/* ── SIGN IN ── */}
+        {screen.type === "signin" && (
           <div className={styles.reveal}>
             <div className={styles.revealIcon}>◈</div>
-
-            {isMichael ? (
-              <>
-                <p className={styles.revealGreeting}>Verified</p>
-                <h2 className={styles.revealName}>
-                  You&apos;re a Michael,<br />
-                  <span>{firstName}.</span>
-                </h2>
-                <p className={styles.revealTierLine}>◈ Michael Tier</p>
-              </>
-            ) : (
-              <>
-                <p className={styles.revealGreeting}>Welcome</p>
-                <h2 className={styles.revealName}>
-                  You believe in<br />
-                  <span>the name.</span>
-                </h2>
-                <p className={styles.revealTierLine}>◈ Inspired by Michael</p>
-              </>
-            )}
-
-            <div className={styles.revealPriceBlock}>
-              <div className={styles.revealPriceNum}>
-                ${isMichael ? "25" : "35"}
-              </div>
-              <div className={styles.revealPriceSub}>
-                One-time · Lifetime access
-              </div>
-            </div>
-
-            <p className={styles.revealNote}>
-              {isMichael
-                ? "Auto-verified. No approval needed. Sign in below, pay once, and you're inside. No recurring charges. Ever."
-                : "No questions asked. No approval needed. The extra $10 is your tribute to the name. Sign in, pay once, inside forever."}
-            </p>
+            <div className={styles.eyebrow}>{screen.eyebrow}</div>
+            <h2 className={styles.revealName}>{screen.heading}</h2>
+            <p className={styles.revealNote} style={{ marginBottom: 32 }}>{screen.body}</p>
 
             <div className={styles.loginGroup}>
               <button
@@ -426,7 +329,6 @@ export default function Onboarding() {
                 </svg>
                 Continue with Google
               </button>
-
               <button
                 className={styles.loginBtn}
                 onClick={() => signIn("linkedin", { callbackUrl: "/join" })}

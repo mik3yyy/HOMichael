@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { getTier, getPrice, getFirstName } from "@/lib/michael-names"
+import { getTier, getPrice, getMichaelName } from "@/lib/michael-names"
 import CheckoutButton from "./CheckoutButton"
 import styles from "./page.module.css"
 
@@ -12,7 +12,7 @@ export default async function JoinPage() {
   if (session.user.isMember) redirect("/dashboard")
 
   const fullName = session.user.name || session.user.email
-  const firstName = getFirstName(fullName)
+  const firstName = getMichaelName(fullName)
   const tier = getTier(fullName)
   const price = getPrice(tier)
   const isMichael = tier === "MICHAEL"
