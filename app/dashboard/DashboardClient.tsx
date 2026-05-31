@@ -77,6 +77,9 @@ export default function DashboardClient({
   myCheckIn: initialCheckIn,
   referralCount: initialReferralCount,
   baseUrl,
+  directoryUnlocked,
+  directoryDaysLeft,
+  totalMembers,
 }: {
   member: MemberInfo
   initialStats: Stats
@@ -85,6 +88,9 @@ export default function DashboardClient({
   myCheckIn: CheckInState | null
   referralCount: number
   baseUrl: string
+  directoryUnlocked: boolean
+  directoryDaysLeft: number
+  totalMembers: number
 }) {
   const [active, setActive] = useState<Section>("home")
   const [toast, setToast] = useState<{ title: string; body: string } | null>(null)
@@ -456,7 +462,42 @@ export default function DashboardClient({
           )}
 
           {/* ═══ DIRECTORY ═══ */}
-          {active === "directory" && (
+          {active === "directory" && !directoryUnlocked && (
+            <div className="section active">
+              <div className="section-heading">The Directory</div>
+              <div className="section-sub">Every Michael. One house. Verified members only.</div>
+
+              <div className="card-gold" style={{ padding: 40, textAlign: "center", marginTop: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 16 }}>Opening in</div>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 10, marginBottom: 24 }}>
+                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 96, fontWeight: 300, color: "var(--gold)", lineHeight: 1 }}>{directoryDaysLeft}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)" }}>days</span>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20 }}>10 August 2026</div>
+
+                <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 560, margin: "0 auto 28px" }}>
+                  When this opens, you will be standing in the most concentrated room of ambitious, talented, and driven people named Michael on the planet.
+                  Founders. Investors. Athletes. Musicians. Builders. Every one of them verified. Every one of them building something real.
+                  Your next co-founder is in here. Your next client. Your next investor. You just can&apos;t see them yet.
+                </p>
+
+                <div style={{ maxWidth: 420, margin: "0 auto" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--gold)" }}>{totalMembers.toLocaleString()}+ members</span>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Goal: 2,000</span>
+                  </div>
+                  <div style={{ height: 4, background: "var(--bg4)", borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${Math.min(100, (totalMembers / 2000) * 100)}%`, background: "linear-gradient(90deg, var(--gold), var(--gold-light))", borderRadius: 2 }} />
+                  </div>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 10, lineHeight: 1.6 }}>
+                    {(2000 - totalMembers).toLocaleString()} founding spots remaining. Once we hit 2,000 the founding rate closes forever.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {active === "directory" && directoryUnlocked && (
             <div className="section active">
               <div className="section-heading">The Directory</div>
               <div className="section-sub">Every Michael. One house. Verified members only.</div>

@@ -31,6 +31,10 @@ export default async function DashboardPage() {
 
   const week = getCurrentWeek()
 
+  const directoryUnlocked = process.env.DIRECTORY_UNLOCKED === "true"
+  const launchDate = new Date("2026-08-10")
+  const daysLeft = Math.max(0, Math.ceil((launchDate.getTime() - Date.now()) / 86400000))
+
   const [stats, recentPosts, podCheckIns, myCheckIn, referralCount] = await Promise.all([
     Promise.all([
       prisma.member.count(),
@@ -90,6 +94,9 @@ export default async function DashboardPage() {
       myCheckIn={myCheckIn ? { lastWeek: myCheckIn.lastWeek ?? "", thisWeek: myCheckIn.thisWeek ?? "", blocker: myCheckIn.blocker ?? "" } : null}
       referralCount={referralCount}
       baseUrl={process.env.NEXTAUTH_URL || "http://localhost:3000"}
+      directoryUnlocked={directoryUnlocked}
+      directoryDaysLeft={daysLeft}
+      totalMembers={stats.totalMembers}
     />
   )
 }
