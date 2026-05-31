@@ -359,8 +359,18 @@ export default function DashboardClient({
               <div className="grid-2">
                 {/* Pod check-in */}
                 <div>
-                  <div className="label">Your Pod — this week</div>
-                  {checkInDone ? (
+                  <div className="label">{directoryUnlocked ? "Your Pod — this week" : "Pods — opening August 10"}</div>
+                  {!directoryUnlocked ? (
+                    <div className="card-gold" style={{ padding: 24 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 12 }}>◎ Coming in {directoryDaysLeft} days</div>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.75, marginBottom: 12 }}>
+                        Five Michaels. One mission. Weekly accountability that actually works. Your pod is being assembled — the people who will hold you to your goals are already in this house.
+                      </p>
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7 }}>
+                        People have shipped products, closed deals, and broken through plateaus because someone in their pod held them to it. Yours is coming.
+                      </p>
+                    </div>
+                  ) : checkInDone ? (
                     <div className="card" style={{ padding: 20, textAlign: "center" }}>
                       <div style={{ fontSize: 24, marginBottom: 8 }}>✓</div>
                       <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Check-in submitted. Your pod sees it.</p>
@@ -397,14 +407,21 @@ export default function DashboardClient({
 
                 {/* Latest posts */}
                 <div>
-                  <div className="label">Latest from the house</div>
+                  <div className="label">{directoryUnlocked ? "Latest from the house" : "What's coming August 10"}</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {initialRecentPosts.length === 0 && (
+                    {!directoryUnlocked && (
+                      <div className="card" style={{ padding: 20 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 10 }}>⟡ Collab Board · ◉ Help Me</div>
+                        <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.75, marginBottom: 8 }}>Post opportunities, find co-founders, ask the house for help — all of it goes live on August 10.</p>
+                        <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7 }}>Every Michael here will see your post. The right one always responds.</p>
+                      </div>
+                    )}
+                    {directoryUnlocked && initialRecentPosts.length === 0 && (
                       <div className="card" style={{ padding: 16, textAlign: "center" }}>
                         <p style={{ fontSize: 12 }}>No posts yet. Be the first.</p>
                       </div>
                     )}
-                    {initialRecentPosts.map((post) => (
+                    {directoryUnlocked && initialRecentPosts.map((post) => ( // eslint-disable-line
                       <div key={post.id} className="card" style={{ padding: 16 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                           <div className="user-avatar" style={{ width: 28, height: 28, fontSize: 11 }}>
@@ -615,7 +632,28 @@ export default function DashboardClient({
           )}
 
           {/* ═══ PODS ═══ */}
-          {active === "pods" && (
+          {active === "pods" && !directoryUnlocked && (
+            <div className="section active">
+              <div className="section-heading">Your Pod</div>
+              <div className="section-sub">Five Michaels. One mission. Your pod is being assembled.</div>
+              <div className="card-gold" style={{ padding: 40, textAlign: "center", marginTop: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 16 }}>Pods open in</div>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 96, fontWeight: 300, color: "var(--gold)", lineHeight: 1 }}>{directoryDaysLeft}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)" }}>days</span>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 28 }}>10 August 2026</div>
+                <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 540, margin: "0 auto 20px" }}>
+                  Think about the five most driven people you know. Now imagine five more — all builders, all moving, all accountable to each other every single week. That is a pod.
+                </p>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 540, margin: "0 auto" }}>
+                  People in this house have shipped products, closed deals, and broken through their biggest blockers because someone in their pod held them to it. No audience. No performance. Just five people who genuinely want to see each other win. Your five are already in this house. You just have not met them yet.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {active === "pods" && directoryUnlocked && (
             <div className="section active">
               <div className="section-heading">Your Pod</div>
               <div className="section-sub">
@@ -676,7 +714,28 @@ export default function DashboardClient({
           )}
 
           {/* ═══ COLLAB ═══ */}
-          {active === "collab" && (
+          {active === "collab" && !directoryUnlocked && (
+            <div className="section active">
+              <div className="section-heading">Collab Board</div>
+              <div className="section-sub">Co-founders. Skills. Partners. All Michaels. All trusted.</div>
+              <div className="card-gold" style={{ padding: 40, textAlign: "center", marginTop: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 16 }}>Opens in</div>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 96, fontWeight: 300, color: "var(--gold)", lineHeight: 1 }}>{directoryDaysLeft}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)" }}>days</span>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 28 }}>10 August 2026</div>
+                <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 540, margin: "0 auto 20px" }}>
+                  This is where deals start. Post an opportunity — co-founder search, skills needed, investor intro, partnership inquiry. Every Michael in the house sees it.
+                </p>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 540, margin: "0 auto" }}>
+                  The collab board is not LinkedIn. There is no noise, no cold pitches, no recruiters. Only Michaels posting real opportunities for other Michaels. Trusted from day one.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {active === "collab" && directoryUnlocked && (
             <div className="section active">
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
                 <div className="section-heading">Collab Board</div>
@@ -733,7 +792,28 @@ export default function DashboardClient({
           )}
 
           {/* ═══ HELP ME ═══ */}
-          {active === "helpme" && (
+          {active === "helpme" && !directoryUnlocked && (
+            <div className="section active">
+              <div className="section-heading">Help Me</div>
+              <div className="section-sub">Make an announcement. The house responds. That&apos;s how this works.</div>
+              <div className="card-gold" style={{ padding: 40, textAlign: "center", marginTop: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 16 }}>Opens in</div>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 96, fontWeight: 300, color: "var(--gold)", lineHeight: 1 }}>{directoryDaysLeft}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)" }}>days</span>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 28 }}>10 August 2026</div>
+                <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 540, margin: "0 auto 20px" }}>
+                  One post. Every Michael in the house sees it. The right one always responds.
+                </p>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 540, margin: "0 auto" }}>
+                  Need a warm intro? A skill? Funding? Advice? Post it. This is a house of builders — someone in here has exactly what you need, and they are looking for a reason to help. Give them one.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {active === "helpme" && directoryUnlocked && (
             <div className="section active">
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
                 <div className="section-heading">Help Me</div>
