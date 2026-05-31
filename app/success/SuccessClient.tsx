@@ -23,6 +23,7 @@ export default function SuccessClient({
   function go() {
     if (!redirected.current) {
       redirected.current = true
+      try { sessionStorage.removeItem("hom_screen"); sessionStorage.removeItem("hom_name") } catch {}
       router.push(destination)
     }
   }
