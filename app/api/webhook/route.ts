@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe"
+import { stripe, stripeWebhookSecret } from "@/lib/stripe"
 import { prisma } from "@/lib/db"
 import { generateReferralCode, creditReferrer } from "@/lib/referral"
 import type Stripe from "stripe"
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      stripeWebhookSecret
     )
   } catch {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
