@@ -477,6 +477,43 @@
   transform: translateY(-1px);
 }
 
+/* ── INTRO SIGN-IN ── */
+.introSignInDivider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 32px;
+  opacity: 0;
+  animation: ob-up 0.5s 1.7s ease forwards;
+}
+.introSignInDivider::before,
+.introSignInDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+}
+.introSignInDivider span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #3a3530;
+  white-space: nowrap;
+}
+
+.introSignInBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  opacity: 0;
+  animation: ob-up 0.5s 1.9s ease forwards;
+}
+
 /* ── KEYFRAMES (prefixed to avoid globals.css conflict) ── */
 @keyframes ob-up {
   from { opacity: 0; transform: translateY(20px); }
