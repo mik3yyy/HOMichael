@@ -8,8 +8,8 @@ export default function ReferralCapture() {
   useEffect(() => {
     const ref = params.get("ref")
     if (ref) {
-      // 7-day cookie
-      document.cookie = `hom_ref=${ref}; path=/; max-age=604800; SameSite=Lax`
+      const secure = location.protocol === "https:" ? "; Secure" : ""
+      document.cookie = `hom_ref=${ref}; path=/; max-age=604800; SameSite=Lax${secure}`
     }
   }, [params])
 
