@@ -3,6 +3,7 @@ import { stripe, stripeWebhookSecret } from "@/lib/stripe"
 import { prisma } from "@/lib/db"
 import { generateReferralCode, creditReferrer } from "@/lib/referral"
 import { getMichaelName } from "@/lib/michael-names"
+import { emailWelcome } from "@/lib/email"
 import type Stripe from "stripe"
 
 export async function POST(req: NextRequest) {
@@ -49,6 +50,9 @@ export async function POST(req: NextRequest) {
       if (meta.referredByCode) {
         await creditReferrer(meta.referredByCode)
       }
+
+      // Send welcome email
+      await emailWelcome({ toEmail: meta.email, firstName, tier: meta.tier })
     }
   }
 

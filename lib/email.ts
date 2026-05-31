@@ -1,65 +1,148 @@
-const FROM = "House of Michaels <noreply@houseofmichaels.com>"
+const FROM = "House of Michaels <hello@houseofmichaels.com>"
+const BASE = process.env.NEXTAUTH_URL || "https://houseofmichaels.com"
 
-interface EmailPayload {
-  to: string
-  subject: string
-  html: string
+const GOLD = "#c9a84c"
+const BG = "#080808"
+const TEXT = "#e8e4dc"
+
+function wrapper(body: string) {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:${BG};font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:${BG};padding:40px 20px;">
+        <tr><td align="center">
+          <table width="520" cellpadding="0" cellspacing="0" style="background:#0f0f0f;border:1px solid rgba(201,168,76,0.2);border-radius:4px;">
+            <tr><td style="padding:32px 40px 0;text-align:center;">
+              <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:${GOLD};">House of Michaels</p>
+            </td></tr>
+            <tr><td style="padding:24px 40px 40px;">
+              ${body}
+            </td></tr>
+            <tr><td style="padding:20px 40px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
+              <p style="margin:0;font-size:10px;color:#3a3530;letter-spacing:0.08em;">
+                © House of Michaels · <a href="${BASE}" style="color:#3a3530;text-decoration:none;">houseofmichaels.com</a>
+              </p>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>
+  `
 }
 
-async function send(payload: EmailPayload) {
-  const key = process.env.RESEND_API_KEY
-  if (!key) return // silently skip in dev without key
+function btn(text: string, href: string) {
+  return `<a href="${href}" style="display:inline-block;margin-top:24px;padding:14px 32px;background:${GOLD};color:#000;text-decoration:none;font-weight:700;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;border-radius:2px;">${text}</a>`
+}
 
+async function send(to: string, subject: string, html: string) {
+  const key = process.env.RESEND_API_KEY
+  if (!key) return
   await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from: FROM, ...payload }),
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: FROM, to, subject, html }),
   })
 }
 
-export async function emailPostResponse({
-  toEmail,
-  toName,
-  fromName,
-  postTitle,
-  message,
-}: {
+// ── 1. Welcome — sent when member pays and joins ──────────────────────────
+export async function emailWelcome({ toEmail, firstName, tier }: {
+  toEmail: string
+  firstName: string
+  tier: string
+}) {
+  const isMichael = tier === "MICHAEL"
+  await send(toEmail, `Welcome to the house, ${firstName}.`, wrapper(`
+    <h1 style="margin:0 0 8px;font-size:28px;font-weight:300;color:${TEXT};font-family:Georgia,serif;">
+      Welcome to the house,<br><span style="color:${GOLD};">${firstName}.</span>
+    </h1>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      ${isMichael
+        ? "Your name has been verified. You are a Michael. This house was built for you."
+        : "You believe in what this name stands for. This house is yours."}
+    </p>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      You have lifetime access. No recurring charges. Ever. Complete your profile so other Michaels can find you, and your pod will be assigned shortly.
+    </p>
+    ${btn("Set up your profile →", `${BASE}/profile/setup`)}
+    <p style="margin:24px 0 0;font-size:11px;color:#3a3530;line-height:1.6;">
+      One house. One name. For life.
+    </p>
+  `))
+}
+
+// ── 2. Profile complete + pod assigned ────────────────────────────────────
+export async function emailProfileComplete({ toEmail, firstName, podCohort }: {
+  toEmail: string
+  firstName: string
+  podCohort?: number | null
+}) {
+  await send(toEmail, "You're in. Your profile is live.", wrapper(`
+    <h1 style="margin:0 0 8px;font-size:28px;font-weight:300;color:${TEXT};font-family:Georgia,serif;">
+      You&rsquo;re in the directory, <span style="color:${GOLD};">${firstName}.</span>
+    </h1>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      Your profile is live. When the directory opens on <strong style="color:${TEXT};">10 August 2026</strong>, every Michael will be able to find you.
+    </p>
+    ${podCohort ? `
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      You have been assigned to <strong style="color:${GOLD};">Pod ${podCohort}</strong> — five Michaels who will hold you accountable every week. Check your pod in the dashboard.
+    </p>
+    ` : ""}
+    ${btn("Go to your dashboard →", `${BASE}/dashboard`)}
+  `))
+}
+
+// ── 3. Pod assignment notification ────────────────────────────────────────
+export async function emailPodAssigned({ toEmail, firstName, cohort, podMemberNames }: {
+  toEmail: string
+  firstName: string
+  cohort: number
+  podMemberNames: string[]
+}) {
+  const names = podMemberNames.filter(Boolean).join(", ")
+  await send(toEmail, `Your pod is ready — Cohort ${cohort}`, wrapper(`
+    <h1 style="margin:0 0 8px;font-size:28px;font-weight:300;color:${TEXT};font-family:Georgia,serif;">
+      Your pod is assembled, <span style="color:${GOLD};">${firstName}.</span>
+    </h1>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      You have been placed in <strong style="color:${GOLD};">Cohort ${cohort}</strong>. Your pod members are:
+    </p>
+    <p style="margin:16px 0;font-size:15px;color:${TEXT};font-weight:700;">${names}</p>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      Submit your first check-in this week. Three questions. Honest answers. That is how this works.
+    </p>
+    ${btn("Open the house →", `${BASE}/dashboard`)}
+  `))
+}
+
+// ── 4. Post response notification ─────────────────────────────────────────
+export async function emailPostResponse({ toEmail, toName, fromName, postTitle, message }: {
   toEmail: string
   toName: string
   fromName: string
   postTitle: string
   message?: string
 }) {
-  await send({
-    to: toEmail,
-    subject: `${fromName} responded to your post`,
-    html: `
-      <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:32px;">
-        <p style="color:#c9a84c;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">House of Michaels</p>
-        <h2 style="margin:8px 0 24px;">You got a response, ${toName}.</h2>
-        <p><strong>${fromName}</strong> responded to your post:</p>
-        <blockquote style="border-left:3px solid #c9a84c;padding-left:16px;color:#666;margin:16px 0;">
-          "${postTitle}"
-        </blockquote>
-        ${message ? `<p>Their message: <em>"${message}"</em></p>` : ""}
-        <p>Log in to the house to follow up.</p>
-        <a href="${process.env.NEXTAUTH_URL}/dashboard" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#c9a84c;color:#000;text-decoration:none;font-weight:700;font-size:12px;letter-spacing:0.1em;">
-          OPEN THE HOUSE →
-        </a>
-      </div>
-    `,
-  })
+  await send(toEmail, `${fromName} responded to your post`, wrapper(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:300;color:${TEXT};font-family:Georgia,serif;">
+      You got a response, <span style="color:${GOLD};">${toName}.</span>
+    </h1>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      <strong style="color:${TEXT};">${fromName}</strong> responded to your post:
+    </p>
+    <blockquote style="border-left:3px solid ${GOLD};padding-left:16px;margin:16px 0;font-size:13px;color:#7a7570;font-style:italic;">
+      &ldquo;${postTitle}&rdquo;
+    </blockquote>
+    ${message ? `<p style="font-size:13px;color:#7a7570;line-height:1.7;">Their message: <em>&ldquo;${message}&rdquo;</em></p>` : ""}
+    ${btn("Open the house →", `${BASE}/dashboard`)}
+  `))
 }
 
-export async function emailOwnerMessage({
-  fromName,
-  fromEmail,
-  subject,
-  message,
-}: {
+// ── 5. Owner message notification ─────────────────────────────────────────
+export async function emailOwnerMessage({ fromName, fromEmail, subject, message }: {
   fromName: string
   fromEmail: string
   subject: string
@@ -67,18 +150,11 @@ export async function emailOwnerMessage({
 }) {
   const ownerEmail = process.env.OWNER_EMAIL
   if (!ownerEmail) return
-
-  await send({
-    to: ownerEmail,
-    subject: `[House] ${fromName}: ${subject}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:32px;">
-        <p style="color:#c9a84c;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">Message from the House</p>
-        <p><strong>From:</strong> ${fromName} (${fromEmail})</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <hr style="border:none;border-top:1px solid #eee;margin:16px 0;"/>
-        <p style="white-space:pre-wrap;">${message}</p>
-      </div>
-    `,
-  })
+  await send(ownerEmail, `[House] ${fromName}: ${subject}`, wrapper(`
+    <p style="margin:0 0 16px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:${GOLD};">Message from the House</p>
+    <p style="font-size:13px;color:#7a7570;margin:0 0 8px;"><strong style="color:${TEXT};">From:</strong> ${fromName} (${fromEmail})</p>
+    <p style="font-size:13px;color:#7a7570;margin:0 0 16px;"><strong style="color:${TEXT};">Subject:</strong> ${subject}</p>
+    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:16px 0;">
+    <p style="font-size:13px;color:#7a7570;line-height:1.7;white-space:pre-wrap;">${message}</p>
+  `))
 }
