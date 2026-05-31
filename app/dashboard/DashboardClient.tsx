@@ -915,9 +915,9 @@ export default function DashboardClient({
                 <div>
                   <div className="card-gold" style={{ marginBottom: 16, padding: 20 }}>
                     <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 300, color: "var(--text)", lineHeight: 1.6, marginBottom: 12 }}>
-                      &ldquo;I built this house because I believe that when Michaels find each other, extraordinary things happen.&rdquo;
+                      &ldquo;I can accept failure, everyone fails at something. But I can&apos;t accept not trying.&rdquo;
                     </p>
-                    <div style={{ fontSize: 11, color: "var(--gold)", letterSpacing: "0.1em" }}>— The Founder</div>
+                    <div style={{ fontSize: 11, color: "var(--gold)", letterSpacing: "0.1em" }}>— Michael Jordan</div>
                   </div>
 
                   <div style={{ marginBottom: 18 }}>
