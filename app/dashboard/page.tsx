@@ -76,6 +76,8 @@ export default async function DashboardPage() {
     isMe: m.email === session.user.email,
   })) ?? []
 
+  const isOwner = session.user.email === process.env.OWNER_EMAIL
+
   return (
     <DashboardClient
       member={{
@@ -97,6 +99,7 @@ export default async function DashboardPage() {
       directoryUnlocked={directoryUnlocked}
       directoryDaysLeft={daysLeft}
       totalMembers={stats.totalMembers}
+      isOwner={isOwner}
     />
   )
 }

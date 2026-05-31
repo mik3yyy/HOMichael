@@ -39,13 +39,14 @@ type CheckInState = { lastWeek: string; thisWeek: string; blocker: string }
 
 // ── Helpers ────────────────────────────────────────────
 
-const SECTIONS = ["home","directory","pods","collab","helpme","feedback","owner"] as const
+const SECTIONS = ["home","directory","pods","collab","helpme","feedback","owner","broadcast"] as const
 type Section = (typeof SECTIONS)[number]
 
 const TITLES: Record<Section, string> = {
   home: "Home", directory: "Directory", pods: "My Pod",
   collab: "Collab Board", helpme: "Help Me",
   feedback: "Shape the Future", owner: "Message the Owner",
+  broadcast: "Send Email",
 }
 
 function tierLabel(tier: string, level: string) {
@@ -80,6 +81,7 @@ export default function DashboardClient({
   directoryUnlocked,
   directoryDaysLeft,
   totalMembers,
+  isOwner,
 }: {
   member: MemberInfo
   initialStats: Stats
@@ -91,6 +93,7 @@ export default function DashboardClient({
   directoryUnlocked: boolean
   directoryDaysLeft: number
   totalMembers: number
+  isOwner: boolean
 }) {
   const [active, setActive] = useState<Section>("home")
   const [toast, setToast] = useState<{ title: string; body: string } | null>(null)
@@ -127,6 +130,11 @@ export default function DashboardClient({
   // New post form
   const [postForm, setPostForm] = useState({ category: "", title: "", body: "", tags: "" })
   const [postSaving, setPostSaving] = useState(false)
+
+  // Broadcast
+  const [broadcastForm, setBroadcastForm] = useState({ subject: "", body: "", audience: "all" })
+  const [broadcastSending, setBroadcastSending] = useState(false)
+  const [broadcastResult, setBroadcastResult] = useState<{ sent: number; total: number } | null>(null)
 
   // Feedback + votes
   const [feedbackForm, setFeedbackForm] = useState({ mustHave: "", referral: "", missing: "" })
@@ -345,6 +353,12 @@ export default function DashboardClient({
               {TITLES[id]}
             </div>
           ))}
+          {isOwner && (
+            <div className={`nav-item${active === "broadcast" ? " active" : ""}`} onClick={() => setActive("broadcast")}>
+              <span className="nav-icon">✉</span>
+              Send Email
+            </div>
+          )}
         </nav>
         <div className="sidebar-user">
           <div className="user-avatar">{initials}</div>
@@ -1015,6 +1029,116 @@ export default function DashboardClient({
                     <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.7 }}>
                       This message goes directly to the founder&apos;s inbox. Use it for ideas, problems, partnership inquiries, or anything you think the house needs. Expect a reply within 48 hours.
                     </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═══ BROADCAST ═══ */}
+          {active === "broadcast" && isOwner && (
+            <div className="section active">
+              <div className="section-heading">Send Email</div>
+              <div className="section-sub">Write once. Reach every Michael in the house.</div>
+
+              <div className="grid-2">
+                <div>
+                  <div className="card" style={{ padding: 24 }}>
+                    <div style={{ marginBottom: 18 }}>
+                      <label style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Audience</label>
+                      <select
+                        className="form-select"
+                        value={broadcastForm.audience}
+                        onChange={(e) => setBroadcastForm((f) => ({ ...f, audience: e.target.value }))}
+                      >
+                        <option value="all">All members</option>
+                        <option value="michael">Michael Tier only</option>
+                        <option value="inspired">Inspired Tier only</option>
+                      </select>
+                    </div>
+
+                    <div style={{ marginBottom: 18 }}>
+                      <label style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>Subject line</label>
+                      <input
+                        className="form-input"
+                        placeholder="What's this about?"
+                        value={broadcastForm.subject}
+                        onChange={(e) => setBroadcastForm((f) => ({ ...f, subject: e.target.value }))}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: 18 }}>
+                      <label style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>
+                        Message
+                        <span style={{ fontWeight: 400, letterSpacing: "0.05em", textTransform: "none", marginLeft: 8, fontSize: 9 }}>
+                          Use {"{{name}}"} to personalise with each member&apos;s name. Blank lines = new paragraph.
+                        </span>
+                      </label>
+                      <textarea
+                        className="form-textarea"
+                        style={{ minHeight: 200 }}
+                        placeholder={"Hey {{name}},\n\nSomething exciting is happening in the house...\n\nStay locked in."}
+                        value={broadcastForm.body}
+                        onChange={(e) => setBroadcastForm((f) => ({ ...f, body: e.target.value }))}
+                      />
+                    </div>
+
+                    {broadcastResult && (
+                      <div style={{ padding: "12px 16px", background: "rgba(126,200,126,0.08)", border: "1px solid rgba(126,200,126,0.2)", borderRadius: 3, marginBottom: 16 }}>
+                        <p style={{ fontSize: 13, color: "var(--green)", margin: 0 }}>
+                          ✓ Sent to {broadcastResult.sent} of {broadcastResult.total} members
+                        </p>
+                      </div>
+                    )}
+
+                    <button
+                      className="btn btn-gold"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      disabled={broadcastSending || !broadcastForm.subject || !broadcastForm.body}
+                      onClick={async () => {
+                        if (!confirm(`Send "${broadcastForm.subject}" to ${broadcastForm.audience === "all" ? "all" : broadcastForm.audience} members?`)) return
+                        setBroadcastSending(true)
+                        setBroadcastResult(null)
+                        try {
+                          const res = await fetch("/api/broadcast", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(broadcastForm),
+                          })
+                          const data = await res.json()
+                          if (res.ok) {
+                            setBroadcastResult(data)
+                            setBroadcastForm((f) => ({ ...f, subject: "", body: "" }))
+                          } else {
+                            showToast("Error", data.error || "Something went wrong")
+                          }
+                        } finally {
+                          setBroadcastSending(false)
+                        }
+                      }}
+                    >
+                      {broadcastSending ? "Sending…" : "Send Email"}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="label">Tips</div>
+                  <div className="card" style={{ padding: 20 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                      {[
+                        ["{{name}}", "Replaced with each member's first name automatically"],
+                        ["Blank line", "Creates a new paragraph in the email"],
+                        ["Keep it short", "2–4 paragraphs. Members read on mobile."],
+                        ["One CTA", "The email already has an 'Open the house' button at the bottom"],
+                        ["Test first", "Send to yourself by setting audience to a tier with only you in it"],
+                      ].map(([tip, desc]) => (
+                        <div key={tip}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", marginBottom: 4 }}>{tip}</div>
+                          <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>{desc}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
