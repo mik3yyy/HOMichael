@@ -19,7 +19,7 @@ export default async function JoinPage() {
   const isMichael = tier === "MICHAEL"
 
   // Live member count + days to directory launch
-  const memberCount = await prisma.member.count() + 1000
+  const memberCount = await prisma.member.count() + 1149
   const launchDate = new Date("2026-08-10")
   const daysLeft = Math.max(0, Math.ceil((launchDate.getTime() - Date.now()) / 86400000))
 

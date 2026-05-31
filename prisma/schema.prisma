@@ -40,6 +40,8 @@ model Member {
   checkIns  CheckIn[]
   posts     Post[]
   responses PostResponse[]
+  votes     FeatureVote[]
+  feedbacks Feedback[]
 }
 
 model Pod {
@@ -89,4 +91,24 @@ model PostResponse {
   createdAt DateTime @default(now())
 
   @@unique([postId, memberId])
+}
+
+model FeatureVote {
+  id        String   @id @default(cuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  feature   String
+  createdAt DateTime @default(now())
+
+  @@unique([memberId, feature])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  mustHave  String?
+  referral  String?
+  missing   String?
+  createdAt DateTime @default(now())
 }

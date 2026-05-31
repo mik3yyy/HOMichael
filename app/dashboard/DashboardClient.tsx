@@ -128,6 +128,19 @@ export default function DashboardClient({
   const [postForm, setPostForm] = useState({ category: "", title: "", body: "", tags: "" })
   const [postSaving, setPostSaving] = useState(false)
 
+  // Feedback + votes
+  const [feedbackForm, setFeedbackForm] = useState({ mustHave: "", referral: "", missing: "" })
+  const [feedbackSaving, setFeedbackSaving] = useState(false)
+  const [feedbackDone, setFeedbackDone] = useState(false)
+  type FeatureItem = { key: string; label: string; votes: number; pct: number; voted: boolean }
+  const [features, setFeatures] = useState<FeatureItem[]>([
+    { key: "mobile-app",       label: "Mobile app (iOS + Android)",      votes: 0, pct: 73, voted: false },
+    { key: "live-events",      label: "Live events and meetups",          votes: 0, pct: 61, voted: false },
+    { key: "marketplace",      label: "Marketplace for services",         votes: 0, pct: 54, voted: false },
+    { key: "resource-library", label: "Resource library and templates",   votes: 0, pct: 48, voted: false },
+    { key: "mentorship",       label: "Mentorship pairing",               votes: 0, pct: 41, voted: false },
+  ])
+
   // Owner message form
   const [ownerForm, setOwnerForm] = useState({ subject: "", message: "" })
   const [ownerSaving, setOwnerSaving] = useState(false)
@@ -256,6 +269,43 @@ export default function DashboardClient({
     setOwnerSaving(false)
     setOwnerForm({ subject: "", message: "" })
     showToast("Message sent", "The founder will respond within 48 hours.")
+  }
+
+  // Load votes when feedback section becomes active
+  useEffect(() => {
+    if (active !== "feedback") return
+    fetch("/api/votes").then((r) => r.json()).then((d) => {
+      if (d.features) setFeatures(d.features)
+    })
+  }, [active])
+
+  async function toggleVote(key: string) {
+    const res = await fetch("/api/votes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ feature: key }),
+    })
+    const data = await res.json()
+    setFeatures((prev) => prev.map((f) =>
+      f.key === key
+        ? { ...f, voted: data.voted, votes: data.voted ? f.votes + 1 : f.votes - 1 }
+        : f
+    ))
+  }
+
+  async function submitFeedback() {
+    if (!feedbackForm.mustHave && !feedbackForm.referral && !feedbackForm.missing) return
+    setFeedbackSaving(true)
+    const res = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(feedbackForm),
+    })
+    setFeedbackSaving(false)
+    if (res.ok) {
+      setFeedbackDone(true)
+      showToast("Feedback submitted", "Your voice shapes what we build. Thank you.")
+    }
   }
 
   // ── Computed ───────────────────────────────────────
@@ -866,37 +916,63 @@ export default function DashboardClient({
                   <div className="card-gold" style={{ marginBottom: 16 }}>
                     <div className="label">Where do you want this house to be in 6 months?</div>
                     <p style={{ fontSize: 12, marginBottom: 16 }}>Your answer shapes the roadmap.</p>
-                    {[
-                      { label: "What's the one thing this platform must have?", ph: "Be specific. Be bold. We're listening." },
-                      { label: "What would make you refer 3 friends immediately?", ph: "What would make this a no-brainer?" },
-                      { label: "What do you think is missing right now?", ph: "Don't hold back." },
-                    ].map((f) => (
-                      <div key={f.label} style={{ marginBottom: 18 }}>
-                        <label style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{f.label}</label>
-                        <textarea className="form-textarea" placeholder={f.ph} />
+
+                    {feedbackDone ? (
+                      <div style={{ textAlign: "center", padding: "20px 0" }}>
+                        <div style={{ fontSize: 28, marginBottom: 10 }}>✓</div>
+                        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Received. Your voice shapes what we build.</p>
                       </div>
-                    ))}
-                    <button className="btn btn-gold" style={{ width: "100%", justifyContent: "center" }} onClick={() => showToast("Feedback submitted", "Your voice shapes what we build. Thank you.")}>
-                      Submit Feedback
-                    </button>
+                    ) : (
+                      <>
+                        {[
+                          { key: "mustHave" as const, label: "What's the one thing this platform must have?", ph: "Be specific. Be bold. We're listening." },
+                          { key: "referral" as const, label: "What would make you refer 3 friends immediately?", ph: "What would make this a no-brainer?" },
+                          { key: "missing" as const, label: "What do you think is missing right now?", ph: "Don't hold back." },
+                        ].map((f) => (
+                          <div key={f.key} style={{ marginBottom: 18 }}>
+                            <label style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 8 }}>{f.label}</label>
+                            <textarea
+                              className="form-textarea"
+                              placeholder={f.ph}
+                              value={feedbackForm[f.key]}
+                              onChange={(e) => setFeedbackForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                            />
+                          </div>
+                        ))}
+                        <button
+                          className="btn btn-gold"
+                          style={{ width: "100%", justifyContent: "center" }}
+                          onClick={submitFeedback}
+                          disabled={feedbackSaving || (!feedbackForm.mustHave && !feedbackForm.referral && !feedbackForm.missing)}
+                        >
+                          {feedbackSaving ? "Sending…" : "Submit Feedback"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
+
                 <div>
                   <div className="label">Community votes — next features</div>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 12 }}>Click to vote. You can change your vote anytime.</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {[
-                      { label: "Mobile app (iOS + Android)", pct: 73 },
-                      { label: "Live events and meetups", pct: 61 },
-                      { label: "Marketplace for services", pct: 54 },
-                      { label: "Resource library and templates", pct: 48 },
-                      { label: "Mentorship pairing", pct: 41 },
-                    ].map((v) => (
-                      <div key={v.label} className="card" style={{ padding: 16 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{v.label}</div>
-                          <div style={{ fontSize: 12, color: "var(--gold)" }}>{v.pct}%</div>
+                    {features.map((v) => (
+                      <div
+                        key={v.key}
+                        className="card"
+                        style={{ padding: 16, cursor: "pointer", border: v.voted ? "1px solid var(--gold)" : undefined, transition: "border 0.2s" }}
+                        onClick={() => toggleVote(v.key)}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            {v.voted && <span style={{ fontSize: 10, color: "var(--gold)" }}>◈</span>}
+                            <div style={{ fontSize: 13, fontWeight: 700, color: v.voted ? "var(--gold)" : "var(--text)" }}>{v.label}</div>
+                          </div>
+                          <div style={{ fontSize: 12, color: "var(--gold)", whiteSpace: "nowrap" }}>{v.votes} vote{v.votes !== 1 ? "s" : ""}</div>
                         </div>
-                        <div className="streak-bar"><div className="streak-fill" style={{ width: `${v.pct}%` }} /></div>
+                        <div className="streak-bar">
+                          <div className="streak-fill" style={{ width: `${Math.max(v.pct, 3)}%`, background: v.voted ? "var(--gold)" : undefined }} />
+                        </div>
                       </div>
                     ))}
                   </div>
