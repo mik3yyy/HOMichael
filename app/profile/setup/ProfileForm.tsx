@@ -5,6 +5,61 @@ import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
 import { COUNTRIES } from "@/lib/countries"
 import { INDUSTRIES } from "@/lib/industries"
+import { BUILDING_OPTIONS, HELP_TAGS } from "@/lib/profile-options"
+
+function MultiSelect({
+  options,
+  value,
+  onChange,
+}: {
+  options: string[]
+  value: string
+  onChange: (val: string) => void
+}) {
+  const selected = value ? value.split(",").map((s) => s.trim()).filter(Boolean) : []
+
+  function toggle(opt: string) {
+    if (selected.includes(opt)) {
+      onChange(selected.filter((s) => s !== opt).join(", "))
+    } else {
+      onChange([...selected, opt].join(", "))
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+        {options.map((opt) => {
+          const active = selected.includes(opt)
+          return (
+            <div
+              key={opt}
+              onClick={() => toggle(opt)}
+              style={{
+                padding: "7px 13px",
+                borderRadius: 3,
+                border: `1px solid ${active ? "var(--gold)" : "var(--border-dim)"}`,
+                background: active ? "var(--gold-dim)" : "var(--bg3)",
+                color: active ? "var(--gold)" : "var(--text-muted)",
+                fontSize: 12,
+                cursor: "pointer",
+                userSelect: "none",
+                transition: "all 0.15s",
+              }}
+            >
+              {opt}
+            </div>
+          )
+        })}
+      </div>
+      {selected.length > 0 && (
+        <p style={{ fontSize: 10, color: "var(--gold)", marginTop: 8, letterSpacing: "0.06em" }}>
+          {selected.length} selected
+        </p>
+      )}
+    </div>
+  )
+}
 
 export default function ProfileForm({
   firstName,
@@ -17,6 +72,7 @@ export default function ProfileForm({
   const { update } = useSession()
   const [step, setStep] = useState(1)
   const [saving, setSaving] = useState(false)
+  const [buildingType, setBuildingType] = useState("")
   const [countrySearch, setCountrySearch] = useState("")
   const [countryOpen, setCountryOpen] = useState(false)
   const countryRef = useRef<HTMLDivElement>(null)
@@ -163,33 +219,51 @@ export default function ProfileForm({
 
           <div className={styles.field}>
             <label>What are you building?</label>
-            <textarea
-              className="form-textarea"
-              placeholder="Describe your project, company, or goal."
-              style={{ minHeight: 90 }}
-              value={form.building}
-              onChange={(e) => set("building", e.target.value)}
-            />
+            <select
+              className="form-select"
+              value={buildingType}
+              onChange={(e) => {
+                const val = e.target.value
+                setBuildingType(val)
+                if (val !== "Other") set("building", val)
+                else set("building", "")
+              }}
+            >
+              <option value="">Select…</option>
+              {BUILDING_OPTIONS.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+            {buildingType === "Other" && (
+              <input
+                className="form-input"
+                style={{ marginTop: 10 }}
+                placeholder="Describe what you're building…"
+                value={form.building}
+                onChange={(e) => set("building", e.target.value)}
+                autoFocus
+              />
+            )}
           </div>
+
           <div className={styles.field}>
             <label>What can you help other Michaels with?</label>
-            <input
-              className="form-input"
-              placeholder="Design, Fundraising, Legal, Africa markets…"
+            <p className={styles.hint} style={{ marginBottom: 6 }}>Select all that apply</p>
+            <MultiSelect
+              options={HELP_TAGS}
               value={form.canHelpWith}
-              onChange={(e) => set("canHelpWith", e.target.value)}
+              onChange={(val) => set("canHelpWith", val)}
             />
-            <p className={styles.hint}>Separate with commas</p>
           </div>
+
           <div className={styles.field}>
             <label>What are you looking for?</label>
-            <input
-              className="form-input"
-              placeholder="Co-founder, UK investors, Copywriter…"
+            <p className={styles.hint} style={{ marginBottom: 6 }}>Select all that apply</p>
+            <MultiSelect
+              options={HELP_TAGS}
               value={form.lookingFor}
-              onChange={(e) => set("lookingFor", e.target.value)}
+              onChange={(val) => set("lookingFor", val)}
             />
-            <p className={styles.hint}>Separate with commas</p>
           </div>
 
           <div className={styles.btnRow}>
