@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 
-export const FEATURES = [
+const FEATURES = [
   { key: "mobile-app",        label: "Mobile app (iOS + Android)" },
   { key: "live-events",       label: "Live events and meetups" },
   { key: "marketplace",       label: "Marketplace for services" },
