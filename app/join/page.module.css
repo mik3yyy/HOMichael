@@ -5,7 +5,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 40px 24px;
 }
 
@@ -172,8 +171,172 @@
   text-decoration: underline;
 }
 
+/* ── PERKS SECTION ── */
+.perksWrap {
+  width: 100%;
+  max-width: 960px;
+  margin-top: 64px;
+  padding-bottom: 80px;
+}
+
+.perksHeading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.perksGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+.perkCard {
+  background: var(--bg2);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.perkCardGold {
+  border-color: var(--border);
+  background: var(--bg3);
+}
+
+.perkIcon {
+  font-size: 18px;
+  color: var(--gold);
+}
+
+.perkTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+.perkBody {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.perkBody strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.perkList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.perkItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.perkDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* ── COUNTDOWN ── */
+.countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.countdownNum {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 72px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.countdownLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── PROGRESS ── */
+.progressWrap {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progressTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.progressGoal {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.progressBar {
+  height: 4px;
+  background: var(--bg4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+.progressNote {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
 @media (max-width: 480px) {
   .card {
     padding: 36px 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .perksGrid {
+    grid-template-columns: 1fr;
   }
 }
