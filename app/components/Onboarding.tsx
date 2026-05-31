@@ -96,13 +96,13 @@ const SCREENS: ScreenDef[] = [
   {
     type: "choice",
     eyebrow: "06 — 08",
-    heading: "Do you love the name?",
-    subheading: "There's no wrong answer here.",
+    heading: "What does the name mean to you?",
+    subheading: "Be honest. No wrong answer.",
     options: [
-      "It's my name — it's everything",
-      "It inspires me deeply",
-      "It chose me somehow",
-      "I'm learning to embrace it",
+      "It's my identity — full stop",
+      "It pushes me to live up to it",
+      "It connects me to something bigger",
+      "It's just a name — but I'm making it legendary",
     ],
   },
   {
