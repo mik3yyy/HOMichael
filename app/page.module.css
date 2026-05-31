@@ -1,0 +1,291 @@
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px 80px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ── HEADER ── */
+.header {
+  width: 100%;
+  padding: 40px 0 0;
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.logoMark {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+
+.logoSub {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.heroEyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+.heroHeading {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(48px, 7vw, 80px);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin-bottom: 24px;
+}
+
+.heroSub {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto;
+  letter-spacing: 0.02em;
+}
+
+/* ── TIERS ── */
+.tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 64px;
+}
+
+.tierCard {
+  background: var(--bg2);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  padding: 32px 28px;
+  transition: border-color 0.25s;
+}
+
+.tierCard:hover {
+  border-color: var(--border);
+}
+
+.tierCardInspired {
+  border-color: var(--border);
+}
+
+.tierBadge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+.tierPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.priceNum {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 52px;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1;
+}
+
+.priceLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.tierDivider {
+  height: 1px;
+  background: var(--border-dim);
+  margin: 20px 0;
+}
+
+.tierBody {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.tierFeatures {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tierFeatures li {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  padding-left: 16px;
+  position: relative;
+}
+
+.tierFeatures li::before {
+  content: "◈";
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 8px;
+  top: 2px;
+}
+
+/* ── STEPS ── */
+.steps {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.stepsLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.stepsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.stepWrap {
+  display: flex;
+  align-items: center;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+.stepNum {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.stepLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.stepLine {
+  width: 40px;
+  height: 1px;
+  background: var(--border-dim);
+}
+
+/* ── LOGIN ── */
+.loginSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 48px;
+  padding: 40px;
+  background: var(--bg2);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+}
+
+.loginLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.loginNote {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 340px;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+}
+
+/* ── FOOTER ── */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+
+.footerMark {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-muted);
+}
+
+.footerDot {
+  color: var(--text-dim);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .tiers {
+    grid-template-columns: 1fr;
+  }
+
+  .stepsRow {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .stepLine {
+    display: none;
+  }
+}

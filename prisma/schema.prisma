@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Member {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String
+  firstName       String
+  tier            String   // "MICHAEL" | "INSPIRED"
+  tierLevel       String   @default("MEMBER") // "MEMBER"|"MIKE"|"MJ"|"GOAT"
+  stripeSessionId String?
+  joinedAt        DateTime @default(now())
+
+  // Profile
+  city            String?
+  country         String?
+  industry        String?
+  bio             String?
+  building        String?
+  canHelpWith     String?  // comma-separated
+  lookingFor      String?  // comma-separated
+  avatarUrl       String?
+  linkedinUrl     String?
+  profileComplete Boolean  @default(false)
+
+  // Referral
+  referralCode    String   @unique
+  referredByCode  String?
+
+  // Relations
+  podId     String?
+  pod       Pod?           @relation(fields: [podId], references: [id])
+  checkIns  CheckIn[]
+  posts     Post[]
+  responses PostResponse[]
+}
+
+model Pod {
+  id        String   @id @default(cuid())
+  cohort    Int
+  createdAt DateTime @default(now())
+
+  members  Member[]
+  checkIns CheckIn[]
+}
+
+model CheckIn {
+  id        String   @id @default(cuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  podId     String
+  pod       Pod      @relation(fields: [podId], references: [id])
+  week      String   // "2026-W22"
+  lastWeek  String?
+  thisWeek  String?
+  blocker   String?
+  createdAt DateTime @default(now())
+
+  @@unique([memberId, week])
+}
+
+model Post {
+  id        String         @id @default(cuid())
+  type      String         // "HELPME" | "COLLAB"
+  category  String
+  title     String
+  body      String
+  tags      String         @default("[]")
+  authorId  String
+  author    Member         @relation(fields: [authorId], references: [id])
+  responses PostResponse[]
+  createdAt DateTime       @default(now())
+}
+
+model PostResponse {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  message   String?
+  createdAt DateTime @default(now())
+
+  @@unique([postId, memberId])
+}
