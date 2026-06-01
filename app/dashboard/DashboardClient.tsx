@@ -39,14 +39,14 @@ type CheckInState = { lastWeek: string; thisWeek: string; blocker: string }
 
 // ── Helpers ────────────────────────────────────────────
 
-const SECTIONS = ["home","directory","pods","collab","helpme","feedback","owner","broadcast"] as const
+const SECTIONS = ["home","directory","pods","collab","helpme","feedback","owner","broadcast","analytics"] as const
 type Section = (typeof SECTIONS)[number]
 
 const TITLES: Record<Section, string> = {
   home: "Home", directory: "Directory", pods: "My Pod",
   collab: "Collab Board", helpme: "Help Me",
   feedback: "Shape the Future", owner: "Message the Owner",
-  broadcast: "Send Email",
+  broadcast: "Send Email", analytics: "Analytics",
 }
 
 function tierLabel(tier: string, level: string) {
@@ -131,6 +131,17 @@ export default function DashboardClient({
   const [postForm, setPostForm] = useState({ category: "", title: "", body: "", tags: "" })
   const [postSaving, setPostSaving] = useState(false)
 
+  // Analytics
+  type AnalyticsData = {
+    totalViews: number; todayViews: number; week7Views: number; month30Views: number
+    totalSigninClicks: number; totalSigninAttempts: number
+    stepCounts: Record<number, number>
+    sources: { src: string; count: number }[]
+    daily: { date: string; count: number }[]
+  }
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+
   // Broadcast
   const [showMobileMore, setShowMobileMore] = useState(false)
   const [broadcastForm, setBroadcastForm] = useState({ subject: "", body: "", audience: "all" })
@@ -199,7 +210,11 @@ export default function DashboardClient({
     if (active === "collab" && collabPosts.length === 0) {
       fetchPosts("COLLAB")
     }
-  }, [active, dirMembers.length, helpPosts.length, collabPosts.length, fetchDirectory, fetchPosts])
+    if (active === "analytics" && !analytics && isOwner) {
+      setAnalyticsLoading(true)
+      fetch("/api/analytics").then(r => r.json()).then(d => { setAnalytics(d); setAnalyticsLoading(false) })
+    }
+  }, [active, dirMembers.length, helpPosts.length, collabPosts.length, analytics, isOwner, fetchDirectory, fetchPosts])
 
   // Debounce directory search
   useEffect(() => {
@@ -362,6 +377,12 @@ export default function DashboardClient({
             <div className={`nav-item${active === "broadcast" ? " active" : ""}`} onClick={() => setActive("broadcast")}>
               <span className="nav-icon">✉</span>
               Send Email
+            </div>
+          )}
+          {isOwner && (
+            <div className={`nav-item${active === "analytics" ? " active" : ""}`} onClick={() => setActive("analytics")}>
+              <span className="nav-icon">◎</span>
+              Analytics
             </div>
           )}
         </nav>
@@ -1037,6 +1058,176 @@ export default function DashboardClient({
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ═══ ANALYTICS ═══ */}
+          {active === "analytics" && isOwner && (
+            <div className="section active">
+              <div className="section-heading">Analytics</div>
+              <div className="section-sub">Landing page funnel — who visits, who clicks, where they stop.</div>
+
+              {analyticsLoading || !analytics ? (
+                <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Loading…</p>
+              ) : (
+                <>
+                  {/* Overview cards */}
+                  <div className="grid-4" style={{ marginBottom: 28 }}>
+                    {[
+                      { num: analytics.totalViews, label: "Total page views" },
+                      { num: analytics.todayViews, label: "Views today" },
+                      { num: analytics.week7Views, label: "Views this week" },
+                      { num: analytics.totalSigninAttempts, label: "Sign-in attempts" },
+                    ].map((s) => (
+                      <div key={s.label} className="card" style={{ textAlign: "center" }}>
+                        <div className="stat-num">{s.num}</div>
+                        <div className="stat-label">{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid-2" style={{ marginBottom: 28 }}>
+                    {/* Funnel */}
+                    <div>
+                      <div className="label" style={{ marginBottom: 12 }}>Step funnel — where they drop off</div>
+                      <div className="card" style={{ padding: 20 }}>
+                        {(() => {
+                          const steps = [
+                            { label: "Page view", count: analytics.totalViews },
+                            { label: "01 — Working on", count: analytics.stepCounts[1] || 0 },
+                            { label: "02 — Showing up", count: analytics.stepCounts[2] || 0 },
+                            { label: "03 — Do better", count: analytics.stepCounts[3] || 0 },
+                            { label: "04 — Change everything", count: analytics.stepCounts[4] || 0 },
+                            { label: "05 — The name", count: analytics.stepCounts[5] || 0 },
+                            { label: "06 — Name meaning", count: analytics.stepCounts[6] || 0 },
+                            { label: "07 — Building", count: analytics.stepCounts[7] || 0 },
+                            { label: "08 — Sign in screen", count: analytics.stepCounts[8] || 0 },
+                            { label: "Sign-in clicked", count: analytics.totalSigninClicks },
+                            { label: "Sign-in attempted", count: analytics.totalSigninAttempts },
+                          ]
+                          const max = Math.max(...steps.map(s => s.count), 1)
+                          return (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                              {steps.map((s, i) => {
+                                const pct = Math.round((s.count / max) * 100)
+                                const dropPct = i > 0 && steps[i - 1].count > 0
+                                  ? Math.round((1 - s.count / steps[i - 1].count) * 100)
+                                  : null
+                                return (
+                                  <div key={s.label}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{s.label}</span>
+                                      <span style={{ fontSize: 11, color: "var(--gold)" }}>
+                                        {s.count}
+                                        {dropPct !== null && dropPct > 0 && (
+                                          <span style={{ color: "#e87070", marginLeft: 6 }}>−{dropPct}%</span>
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="streak-bar">
+                                      <div className="streak-fill" style={{ width: `${Math.max(pct, 1)}%`, background: i >= 9 ? "var(--gold)" : undefined }} />
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                      {/* Daily chart */}
+                      <div>
+                        <div className="label" style={{ marginBottom: 12 }}>Daily views — last 14 days</div>
+                        <div className="card" style={{ padding: 20 }}>
+                          {(() => {
+                            const maxDay = Math.max(...analytics.daily.map(d => d.count), 1)
+                            return (
+                              <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 80 }}>
+                                {analytics.daily.map((d) => {
+                                  const h = Math.max(Math.round((d.count / maxDay) * 72), d.count > 0 ? 4 : 1)
+                                  const label = d.date.slice(5) // MM-DD
+                                  return (
+                                    <div key={d.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                                      <div
+                                        title={`${d.date}: ${d.count} views`}
+                                        style={{ width: "100%", height: h, background: d.count > 0 ? "var(--gold)" : "var(--bg4)", borderRadius: 2, opacity: 0.85 }}
+                                      />
+                                      {[0, 6, 13].includes(analytics.daily.indexOf(d)) && (
+                                        <span style={{ fontSize: 9, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{label}</span>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Traffic sources */}
+                      <div>
+                        <div className="label" style={{ marginBottom: 12 }}>Traffic sources</div>
+                        <div className="card" style={{ padding: 20 }}>
+                          {analytics.sources.length === 0 ? (
+                            <p style={{ fontSize: 12, color: "var(--text-muted)" }}>No source data yet.</p>
+                          ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                              {(() => {
+                                const max = analytics.sources[0].count
+                                return analytics.sources.map(({ src, count }) => (
+                                  <div key={src}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{src}</span>
+                                      <span style={{ fontSize: 11, color: "var(--gold)" }}>{count}</span>
+                                    </div>
+                                    <div className="streak-bar">
+                                      <div className="streak-fill" style={{ width: `${Math.round((count / max) * 100)}%` }} />
+                                    </div>
+                                  </div>
+                                ))
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Quick stats */}
+                      <div>
+                        <div className="label" style={{ marginBottom: 12 }}>Conversion</div>
+                        <div className="card" style={{ padding: 20 }}>
+                          {[
+                            { label: "View → Step 1", val: analytics.totalViews > 0 ? `${Math.round((analytics.stepCounts[1] || 0) / analytics.totalViews * 100)}%` : "—" },
+                            { label: "View → Sign-in screen", val: analytics.totalViews > 0 ? `${Math.round((analytics.stepCounts[8] || 0) / analytics.totalViews * 100)}%` : "—" },
+                            { label: "View → Sign-in attempt", val: analytics.totalViews > 0 ? `${Math.round(analytics.totalSigninAttempts / analytics.totalViews * 100)}%` : "—" },
+                            { label: "Sign-in click → attempt", val: analytics.totalSigninClicks > 0 ? `${Math.round(analytics.totalSigninAttempts / analytics.totalSigninClicks * 100)}%` : "—" },
+                          ].map(({ label, val }) => (
+                            <div key={label} style={{ display: "flex", justifyContent: "space-between", paddingBottom: 10, marginBottom: 10, borderBottom: "1px solid var(--border-dim)" }}>
+                              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{label}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--gold)" }}>{val}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <button
+                      className="btn btn-ghost"
+                      style={{ fontSize: 10, padding: "6px 14px" }}
+                      onClick={() => {
+                        setAnalytics(null)
+                        setAnalyticsLoading(true)
+                        fetch("/api/analytics").then(r => r.json()).then(d => { setAnalytics(d); setAnalyticsLoading(false) })
+                      }}
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

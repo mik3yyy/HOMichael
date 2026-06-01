@@ -112,3 +112,16 @@ model Feedback {
   missing   String?
   createdAt DateTime @default(now())
 }
+
+model PageEvent {
+  id        String   @id @default(cuid())
+  event     String   // "page_view" | "step_1"..."step_8" | "signin_click" | "signin_attempt"
+  step      Int?
+  sessionId String?
+  source    String?  // utm_source or referrer domain
+  refCode   String?
+  createdAt DateTime @default(now())
+
+  @@index([event])
+  @@index([createdAt])
+}

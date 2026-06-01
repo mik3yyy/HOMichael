@@ -129,6 +129,38 @@ const TOTAL_QUESTIONS = 8 // excludes intro, name, reveal
 
 // ── Component ─────────────────────────────────────────────────────────────
 
+function getSessionId() {
+  try {
+    let id = sessionStorage.getItem("hom_sid")
+    if (!id) { id = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem("hom_sid", id) }
+    return id
+  } catch { return undefined }
+}
+
+function getSource() {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const utm = params.get("utm_source")
+    if (utm) return utm
+    const ref = document.referrer
+    if (!ref) return "direct"
+    try { return new URL(ref).hostname.replace(/^www\./, "") } catch { return "unknown" }
+  } catch { return undefined }
+}
+
+function getRefCode() {
+  try { return new URLSearchParams(window.location.search).get("ref") || undefined } catch { return undefined }
+}
+
+function track(event: string, step?: number) {
+  const sid = getSessionId()
+  fetch("/api/analytics", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event, step: step ?? null, sessionId: sid, source: getSource(), refCode: getRefCode() }),
+  }).catch(() => {})
+}
+
 export default function Onboarding() {
   const [screenIdx, setScreenIdx] = useState(0)
   const [visible, setVisible] = useState(true)
@@ -136,6 +168,7 @@ export default function Onboarding() {
   const [showSignIn, setShowSignIn] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
+  const trackedView = useRef(false)
 
   // Restore from sessionStorage after client mount
   useEffect(() => {
@@ -144,6 +177,7 @@ export default function Onboarding() {
       if (savedScreen) setScreenIdx(parseInt(savedScreen, 10) || 0)
     } catch {}
     setHydrated(true)
+    if (!trackedView.current) { trackedView.current = true; track("page_view") }
   }, [])
 
   // Save screen whenever it changes (only after hydration)
@@ -173,7 +207,9 @@ export default function Onboarding() {
 
   function advance() {
     if (screenIdx < SCREENS.length - 1) {
-      transition(() => setScreenIdx(i => i + 1))
+      const nextIdx = screenIdx + 1
+      track(`step_${nextIdx}`, nextIdx)
+      transition(() => setScreenIdx(nextIdx))
     }
   }
 
@@ -217,7 +253,7 @@ export default function Onboarding() {
       )}
 
       {/* Sign in link */}
-      <button className={styles.signInLink} onClick={() => setShowSignIn(true)}>
+      <button className={styles.signInLink} onClick={() => { track("signin_click"); setShowSignIn(true) }}>
         Sign in
       </button>
 
@@ -228,7 +264,7 @@ export default function Onboarding() {
             <div className={styles.signInModalTitle}>Sign in to House of Michaels</div>
             <button
               className={`${styles.loginBtn} ${styles.loginBtnGoogle}`}
-              onClick={() => signIn("google", { callbackUrl: "/join" })}
+              onClick={() => { track("signin_attempt"); signIn("google", { callbackUrl: "/join" }) }}
             >
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
                 <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -319,7 +355,7 @@ export default function Onboarding() {
             <div className={styles.loginGroup}>
               <button
                 className={`${styles.loginBtn} ${styles.loginBtnGoogle}`}
-                onClick={() => signIn("google", { callbackUrl: "/join" })}
+                onClick={() => { track("signin_attempt"); signIn("google", { callbackUrl: "/join" }) }}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
