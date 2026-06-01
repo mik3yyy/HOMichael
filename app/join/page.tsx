@@ -7,11 +7,22 @@ import CheckoutButton from "./CheckoutButton"
 import PerksChecklist from "./PerksChecklist"
 import styles from "./page.module.css"
 
-export default async function JoinPage() {
+export default async function JoinPage({
+  searchParams,
+}: {
+  searchParams: { dropped?: string }
+}) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.email) redirect("/")
   if (session.user.isMember) redirect("/dashboard")
+
+  if (searchParams.dropped === "1") {
+    await prisma.checkoutAttempt.updateMany({
+      where: { email: session.user.email, status: "pending" },
+      data: { status: "cancelled" },
+    }).catch(() => {})
+  }
 
   const fullName = session.user.name || session.user.email
   const firstName = getMichaelName(fullName)

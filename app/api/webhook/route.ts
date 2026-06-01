@@ -29,10 +29,15 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session
     const meta = session.metadata
 
+    await prisma.checkoutAttempt.updateMany({
+      where: { stripeSessionId: session.id },
+      data: { status: "completed" },
+    }).catch(() => {})
+
     if (meta?.email && meta?.tier) {
       const firstName = getMichaelName(meta.name || meta.email)
 
-      const member = await prisma.member.upsert({
+      await prisma.member.upsert({
         where: { email: meta.email },
         update: { stripeSessionId: session.id },
         create: {
@@ -46,14 +51,20 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      // Credit the referrer if applicable
       if (meta.referredByCode) {
         await creditReferrer(meta.referredByCode)
       }
 
-      // Send welcome email
       await emailWelcome({ toEmail: meta.email, firstName, tier: meta.tier })
     }
+  }
+
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as Stripe.Checkout.Session
+    await prisma.checkoutAttempt.updateMany({
+      where: { stripeSessionId: session.id, status: "pending" },
+      data: { status: "expired" },
+    }).catch(() => {})
   }
 
   return NextResponse.json({ received: true })

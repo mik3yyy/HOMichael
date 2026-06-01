@@ -36,11 +36,17 @@ export async function GET(req: NextRequest) {
   const day7 = new Date(now); day7.setDate(day7.getDate() - 7)
   const day30 = new Date(now); day30.setDate(day30.getDate() - 30)
 
-  const [allEvents, todayEvents, week7Events, month30Events] = await Promise.all([
+  const [allEvents, todayEvents, week7Events, month30Events, droppedAttempts] = await Promise.all([
     prisma.pageEvent.findMany({ select: { event: true, step: true, source: true, sessionId: true, createdAt: true } }),
     prisma.pageEvent.count({ where: { event: "page_view", createdAt: { gte: day1 } } }),
     prisma.pageEvent.count({ where: { event: "page_view", createdAt: { gte: day7 } } }),
     prisma.pageEvent.count({ where: { event: "page_view", createdAt: { gte: day30 } } }),
+    prisma.checkoutAttempt.findMany({
+      where: { status: { in: ["cancelled", "expired", "pending"] } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: { id: true, email: true, name: true, tier: true, status: true, amountCents: true, createdAt: true, referredByCode: true },
+    }),
   ])
 
   const totalViews = allEvents.filter(e => e.event === "page_view").length
@@ -80,6 +86,15 @@ export async function GET(req: NextRequest) {
     daily.push({ date: key, count: dailyMap[key] || 0 })
   }
 
+  const checkoutStats = {
+    cancelled: droppedAttempts.filter(a => a.status === "cancelled").length,
+    expired: droppedAttempts.filter(a => a.status === "expired").length,
+    pending: droppedAttempts.filter(a => a.status === "pending").length,
+    lostRevenue: droppedAttempts
+      .filter(a => a.status !== "pending")
+      .reduce((sum, a) => sum + a.amountCents, 0),
+  }
+
   return NextResponse.json({
     totalViews,
     todayViews: todayEvents,
@@ -90,5 +105,7 @@ export async function GET(req: NextRequest) {
     stepCounts,
     sources,
     daily,
+    droppedAttempts,
+    checkoutStats,
   })
 }

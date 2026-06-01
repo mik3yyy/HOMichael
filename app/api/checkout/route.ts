@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
 import { getPriceCents } from "@/lib/michael-names"
+import { prisma } from "@/lib/db"
 
 function getBaseUrl(req: NextRequest): string {
   // Use the actual request origin — works on localhost any port, Vercel, custom domain
@@ -60,7 +61,18 @@ export async function POST(req: NextRequest) {
         referredByCode: refCookie || "",
       },
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/join`,
+      cancel_url: `${baseUrl}/join?dropped=1`,
+    })
+
+    await prisma.checkoutAttempt.create({
+      data: {
+        email: session.user.email,
+        name: session.user.name || "",
+        tier,
+        stripeSessionId: checkoutSession.id,
+        amountCents: amount,
+        referredByCode: refCookie || null,
+      },
     })
 
     return NextResponse.json({ url: checkoutSession.url })

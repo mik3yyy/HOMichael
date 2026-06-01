@@ -132,12 +132,18 @@ export default function DashboardClient({
   const [postSaving, setPostSaving] = useState(false)
 
   // Analytics
+  type DroppedAttempt = {
+    id: string; email: string; name: string; tier: string
+    status: string; amountCents: number; createdAt: string; referredByCode: string | null
+  }
   type AnalyticsData = {
     totalViews: number; todayViews: number; week7Views: number; month30Views: number
     totalSigninClicks: number; totalSigninAttempts: number
     stepCounts: Record<number, number>
     sources: { src: string; count: number }[]
     daily: { date: string; count: number }[]
+    droppedAttempts: DroppedAttempt[]
+    checkoutStats: { cancelled: number; expired: number; pending: number; lostRevenue: number }
   }
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
@@ -1211,6 +1217,69 @@ export default function DashboardClient({
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Checkout drop-offs */}
+                  <div style={{ marginBottom: 28 }}>
+                    <div className="label" style={{ marginBottom: 6 }}>Checkout drop-offs — who got blocked at payment</div>
+                    <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+                      {[
+                        { num: analytics.checkoutStats.cancelled, label: "Cancelled", color: "#e87070" },
+                        { num: analytics.checkoutStats.expired,   label: "Expired",   color: "#e8a870" },
+                        { num: analytics.checkoutStats.pending,   label: "In-flight",  color: "var(--text-muted)" },
+                        { num: `$${(analytics.checkoutStats.lostRevenue / 100).toFixed(0)}`, label: "Lost revenue", color: "var(--gold)" },
+                      ].map(s => (
+                        <div key={s.label} className="card" style={{ flex: 1, textAlign: "center", padding: "16px 8px" }}>
+                          <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.num}</div>
+                          <div className="stat-label">{s.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {analytics.droppedAttempts.length === 0 ? (
+                      <div className="card" style={{ padding: 20, textAlign: "center" }}>
+                        <p style={{ fontSize: 12, color: "var(--text-muted)" }}>No drop-offs yet. Everyone who checked out, paid.</p>
+                      </div>
+                    ) : (
+                      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                          <thead>
+                            <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                              {["Name", "Email", "Tier", "Amount", "Status", "When"].map(h => (
+                                <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {analytics.droppedAttempts.map((a) => {
+                              const statusColor = a.status === "cancelled" ? "#e87070" : a.status === "expired" ? "#e8a870" : "var(--text-muted)"
+                              const ago = (() => {
+                                const diff = Date.now() - new Date(a.createdAt).getTime()
+                                const h = Math.floor(diff / 3600000)
+                                if (h < 1) return "just now"
+                                if (h < 24) return `${h}h ago`
+                                const d = Math.floor(h / 24)
+                                return `${d}d ago`
+                              })()
+                              return (
+                                <tr key={a.id} style={{ borderBottom: "1px solid var(--border-dim)" }}>
+                                  <td style={{ padding: "10px 14px", color: "var(--text)", fontWeight: 600 }}>{a.name || "—"}</td>
+                                  <td style={{ padding: "10px 14px", color: "var(--text-muted)" }}>{a.email}</td>
+                                  <td style={{ padding: "10px 14px" }}>
+                                    <span className="tag" style={{ background: a.tier === "MICHAEL" ? "rgba(201,168,76,0.12)" : undefined, color: a.tier === "MICHAEL" ? "var(--gold)" : undefined }}>{a.tier}</span>
+                                  </td>
+                                  <td style={{ padding: "10px 14px", color: "var(--text)", fontWeight: 600 }}>${(a.amountCents / 100).toFixed(0)}</td>
+                                  <td style={{ padding: "10px 14px" }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: statusColor }}>{a.status}</span>
+                                  </td>
+                                  <td style={{ padding: "10px 14px", color: "var(--text-muted)" }}>{ago}</td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ textAlign: "right" }}>
