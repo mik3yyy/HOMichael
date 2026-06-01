@@ -24,7 +24,11 @@ export default async function JoinPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <a href="/" className={styles.logoMark}>House of Michaels</a>
+        <a href="/" className={styles.logoMark} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="" style={{ width: 24, height: 24, borderRadius: 4 }} />
+          House of Michaels
+        </a>
       </header>
 
       <div className={styles.card}>

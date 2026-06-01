@@ -31,6 +31,7 @@ function wrapper(body: string) {
             <tr><td align="center">
               <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f0f0f" class="card" style="background-color:#0f0f0f;border:1px solid #2a2010;border-radius:4px;">
                 <tr><td style="padding:32px 32px 0;text-align:center;">
+                  <img src="https://houseofmichaels.com/icon-192.png" alt="House of Michaels" width="44" height="44" style="display:inline-block;width:44px;height:44px;border-radius:10px;margin-bottom:12px;" />
                   <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:${GOLD};">House of Michaels</p>
                 </td></tr>
                 <tr><td style="padding:24px 32px 40px;color:#e8e4dc;">

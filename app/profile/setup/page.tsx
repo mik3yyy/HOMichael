@@ -19,7 +19,11 @@ export default async function ProfileSetupPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.logoMark}>House of Michaels</div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className={styles.logoMark} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <img src="/icon-192.png" alt="" style={{ width: 24, height: 24, borderRadius: 4 }} />
+          House of Michaels
+        </div>
       </header>
 
       <div className={styles.intro}>

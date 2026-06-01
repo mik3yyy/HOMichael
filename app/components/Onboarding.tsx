@@ -193,7 +193,13 @@ export default function Onboarding() {
       )}
 
       {/* Logo — only on intro; replaced by Start over on other screens */}
-      {screenIdx === 0 && <div className={styles.logo}>House of Michaels</div>}
+      {screenIdx === 0 && (
+        <div className={styles.logo} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="" style={{ width: 20, height: 20, borderRadius: 4, opacity: 0.8 }} />
+          House of Michaels
+        </div>
+      )}
 
       {/* Start over — only show after intro screen */}
       {screenIdx > 0 && (
@@ -244,7 +250,11 @@ export default function Onboarding() {
         {screen.type === "intro" && (
           <div className={styles.introWrap}>
             <div className={styles.introM}>M</div>
-            <div className={styles.introBrand}>House of Michaels</div>
+            <div className={styles.introBrand} style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon-192.png" alt="" style={{ width: 22, height: 22, borderRadius: 4 }} />
+              House of Michaels
+            </div>
             <h1 className={styles.introHeading}>
               There is only<br />one house.
             </h1>

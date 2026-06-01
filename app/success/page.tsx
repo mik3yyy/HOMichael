@@ -68,7 +68,11 @@ export default async function SuccessPage({
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.logoMark}>House of Michaels</div>
+        <div className={styles.logoMark} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="" style={{ width: 24, height: 24, borderRadius: 4 }} />
+          House of Michaels
+        </div>
       </header>
       <SuccessClient firstName={firstName} tier={tier} isNewMember={isNewMember} />
     </div>

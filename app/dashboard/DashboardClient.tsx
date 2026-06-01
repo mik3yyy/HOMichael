@@ -333,7 +333,11 @@ export default function DashboardClient({
       {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="logo-mark">House of<br />Michaels</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon-192.png" alt="House of Michaels" style={{ width: 32, height: 32, borderRadius: 6 }} />
+            <div className="logo-mark">House of<br />Michaels</div>
+          </div>
           <div className="logo-sub">Lifetime Member</div>
         </div>
         <nav className="sidebar-nav">

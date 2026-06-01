@@ -25,6 +25,7 @@ function buildHtml(subject: string, body: string) {
         <tr><td align="center">
           <table width="560" cellpadding="0" cellspacing="0" style="background:#0f0f0f;border:1px solid rgba(201,168,76,0.2);border-radius:4px;">
             <tr><td style="padding:32px 40px 0;text-align:center;">
+              <img src="https://houseofmichaels.com/icon-192.png" alt="House of Michaels" width="44" height="44" style="display:inline-block;width:44px;height:44px;border-radius:10px;margin-bottom:12px;" />
               <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#c9a84c;">House of Michaels</p>
               <h1 style="margin:12px 0 0;font-size:24px;font-weight:300;color:#e8e4dc;font-family:Georgia,serif;">${subject}</h1>
             </td></tr>
