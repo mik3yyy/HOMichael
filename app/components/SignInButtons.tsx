@@ -30,19 +30,7 @@ export default function SignInButtons() {
         Continue with Google
       </button>
 
-      <button
-        className={styles.provider}
-        onClick={() => signIn("linkedin", { callbackUrl: "/join" })}
-      >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <rect width="18" height="18" rx="2" fill="#0A66C2" />
-          <path
-            d="M4.5 7H6.5V14H4.5V7ZM5.5 4C4.672 4 4 4.672 4 5.5S4.672 7 5.5 7 7 6.328 7 5.5 6.328 4 5.5 4ZM8 7H10V8C10.4 7.4 11.2 7 12 7C13.8 7 14 8.5 14 9.5V14H12V10C12 9.4 12 8.5 11 8.5 10 8.5 10 9.5 10 10V14H8V7Z"
-            fill="white"
-          />
-        </svg>
-        Continue with LinkedIn
-      </button>
+      {/* LinkedIn hidden until OAuth is fixed */}
     </div>
   )
 }

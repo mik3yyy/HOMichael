@@ -95,7 +95,7 @@ export default async function DashboardPage() {
       podMembers={podMembers}
       myCheckIn={myCheckIn ? { lastWeek: myCheckIn.lastWeek ?? "", thisWeek: myCheckIn.thisWeek ?? "", blocker: myCheckIn.blocker ?? "" } : null}
       referralCount={referralCount}
-      baseUrl={process.env.NEXTAUTH_URL || "http://localhost:3000"}
+      baseUrl={(() => { const u = process.env.NEXTAUTH_URL || ""; return (!u || u.includes("localhost")) ? "https://houseofmichaels.com" : u })()}
       directoryUnlocked={directoryUnlocked}
       directoryDaysLeft={daysLeft}
       totalMembers={stats.totalMembers}
