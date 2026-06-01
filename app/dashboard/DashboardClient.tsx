@@ -1224,14 +1224,14 @@ export default function DashboardClient({
                   {/* Checkout drop-offs */}
                   <div style={{ marginBottom: 28 }}>
                     <div className="label" style={{ marginBottom: 6 }}>Checkout drop-offs — who got blocked at payment</div>
-                    <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+                    <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
                       {[
                         { num: analytics.checkoutStats.cancelled, label: "Cancelled", color: "#e87070" },
                         { num: analytics.checkoutStats.expired,   label: "Expired",   color: "#e8a870" },
                         { num: analytics.checkoutStats.pending,   label: "In-flight",  color: "var(--text-muted)" },
                         { num: `$${(analytics.checkoutStats.lostRevenue / 100).toFixed(0)}`, label: "Lost revenue", color: "var(--gold)" },
                       ].map(s => (
-                        <div key={s.label} className="card" style={{ flex: 1, textAlign: "center", padding: "16px 8px" }}>
+                        <div key={s.label} className="card" style={{ flex: "1 1 120px", textAlign: "center", padding: "16px 8px" }}>
                           <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.num}</div>
                           <div className="stat-label">{s.label}</div>
                         </div>
@@ -1244,7 +1244,8 @@ export default function DashboardClient({
                       </div>
                     ) : (
                       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                        <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                        <table style={{ width: "100%", minWidth: 560, borderCollapse: "collapse", fontSize: 12 }}>
                           <thead>
                             <tr style={{ borderBottom: "1px solid var(--border)" }}>
                               {["Name", "Email", "Tier", "Amount", "Status", "When", ""].map(h => (
@@ -1315,6 +1316,7 @@ export default function DashboardClient({
                             })}
                           </tbody>
                         </table>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1469,7 +1471,7 @@ export default function DashboardClient({
           </button>
         ))}
         <button
-          className={`mobile-nav-item${["feedback","owner","broadcast"].includes(active) ? " active" : ""}`}
+          className={`mobile-nav-item${["feedback","owner","broadcast","analytics"].includes(active) ? " active" : ""}`}
           onClick={() => setShowMobileMore(true)}
         >
           <span className="mobile-nav-icon">···</span>
@@ -1485,6 +1487,7 @@ export default function DashboardClient({
               { id: "feedback",  icon: "✦", label: "Shape the Future"    },
               { id: "owner",     icon: "◇", label: "Message the Owner"   },
               ...(isOwner ? [{ id: "broadcast", icon: "✉", label: "Send Email" }] : []),
+              ...(isOwner ? [{ id: "analytics", icon: "◎", label: "Analytics" }] : []),
             ] as { id: Section; icon: string; label: string }[]).map((item) => (
               <button
                 key={item.id}
