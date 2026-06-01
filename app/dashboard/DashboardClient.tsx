@@ -132,6 +132,7 @@ export default function DashboardClient({
   const [postSaving, setPostSaving] = useState(false)
 
   // Broadcast
+  const [showMobileMore, setShowMobileMore] = useState(false)
   const [broadcastForm, setBroadcastForm] = useState({ subject: "", body: "", audience: "all" })
   const [broadcastSending, setBroadcastSending] = useState(false)
   const [broadcastResult, setBroadcastResult] = useState<{ sent: number; total: number } | null>(null)
@@ -1147,6 +1148,63 @@ export default function DashboardClient({
 
         </div>
       </main>
+
+      {/* MOBILE BOTTOM NAV */}
+      <nav className="mobile-nav">
+        {([
+          { id: "home",      icon: "◈", label: "Home"      },
+          { id: "directory", icon: "⊞", label: "Directory" },
+          { id: "pods",      icon: "◎", label: "Pods"      },
+          { id: "collab",    icon: "⟡", label: "Collab"    },
+          { id: "helpme",    icon: "◉", label: "Help Me"   },
+        ] as { id: Section; icon: string; label: string }[]).map((item) => (
+          <button
+            key={item.id}
+            className={`mobile-nav-item${active === item.id ? " active" : ""}`}
+            onClick={() => setActive(item.id)}
+          >
+            <span className="mobile-nav-icon">{item.icon}</span>
+            {item.label}
+          </button>
+        ))}
+        <button
+          className={`mobile-nav-item${["feedback","owner","broadcast"].includes(active) ? " active" : ""}`}
+          onClick={() => setShowMobileMore(true)}
+        >
+          <span className="mobile-nav-icon">···</span>
+          More
+        </button>
+      </nav>
+
+      {/* MOBILE MORE SHEET */}
+      {showMobileMore && (
+        <div className="mobile-more-backdrop" onClick={() => setShowMobileMore(false)}>
+          <div className="mobile-more-sheet" onClick={(e) => e.stopPropagation()}>
+            {([
+              { id: "feedback",  icon: "✦", label: "Shape the Future"    },
+              { id: "owner",     icon: "◇", label: "Message the Owner"   },
+              ...(isOwner ? [{ id: "broadcast", icon: "✉", label: "Send Email" }] : []),
+            ] as { id: Section; icon: string; label: string }[]).map((item) => (
+              <button
+                key={item.id}
+                className={`mobile-more-item${active === item.id ? " active" : ""}`}
+                onClick={() => { setActive(item.id); setShowMobileMore(false) }}
+              >
+                <span className="mobile-more-icon">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
+            <button
+              className="mobile-more-item"
+              style={{ color: "var(--text-muted)", borderTop: "1px solid var(--border-dim)", marginTop: 8 }}
+              onClick={() => { if (confirm("Are you sure you want to sign out?")) signOut({ callbackUrl: "/" }) }}
+            >
+              <span className="mobile-more-icon">→</span>
+              Sign out
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* TOAST */}
       {toast && (
