@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 
 const FROM = "House of Michaels <hello@houseofmichaels.com>"
-const BASE = process.env.NEXTAUTH_URL || "https://houseofmichaels.com"
+const rawBase = process.env.NEXTAUTH_URL || ""
+const BASE = rawBase.includes("localhost") || !rawBase ? "https://houseofmichaels.com" : rawBase
 
 function buildHtml(subject: string, body: string) {
   const escaped = body
