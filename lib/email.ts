@@ -82,7 +82,7 @@ export async function emailWelcome({ toEmail, firstName, tier }: {
         : "You believe in what this name stands for. This house is yours."}
     </p>
     <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
-      You have lifetime access. No recurring charges. Ever. Complete your profile so other Michaels can find you, and your pod will be assigned shortly.
+      You have lifetime access. No subscriptions. No renewals. No recurring charges. Ever. Set up your profile now so you are ready when the house fully opens.
     </p>
     ${btn("Set up your profile →", `${BASE}/profile/setup`)}
     <p style="margin:24px 0 0;font-size:11px;color:#3a3530;line-height:1.6;">
@@ -91,24 +91,24 @@ export async function emailWelcome({ toEmail, firstName, tier }: {
   `))
 }
 
-// ── 2. Profile complete + pod assigned ────────────────────────────────────
-export async function emailProfileComplete({ toEmail, firstName, podCohort }: {
+// ── 2. Profile complete ───────────────────────────────────────────────────
+export async function emailProfileComplete({ toEmail, firstName }: {
   toEmail: string
   firstName: string
-  podCohort?: number | null
 }) {
   await send(toEmail, "You're in. Your profile is live.", wrapper(`
     <h1 style="margin:0 0 8px;font-size:28px;font-weight:300;color:${TEXT};font-family:Georgia,serif;">
-      You&rsquo;re in the directory, <span style="color:${GOLD};">${firstName}.</span>
+      You&rsquo;re in, <span style="color:${GOLD};">${firstName}.</span>
     </h1>
     <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
-      Your profile is live. When the directory opens on <strong style="color:${TEXT};">10 August 2026</strong>, every Michael will be able to find you.
+      Your profile is live. When the directory opens on <strong style="color:${TEXT};">10 August 2026</strong>, every Michael will be able to find you, connect with you, and build with you.
     </p>
-    ${podCohort ? `
     <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
-      You have been assigned to <strong style="color:${GOLD};">Pod ${podCohort}</strong> — five Michaels who will hold you accountable every week. Check your pod in the dashboard.
+      While you wait, the house is listening. Head to <strong style="color:${TEXT};">Shape the Future</strong> in your dashboard to vote on what gets built next — your voice literally decides the roadmap. Or message the founder directly if you have an idea, a question, or something you think this house needs.
     </p>
-    ` : ""}
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      Pods — your five-person accountability circle — are coming. We are assembling them carefully. You will hear from us when yours is ready.
+    </p>
     ${btn("Go to your dashboard →", `${BASE}/dashboard`)}
   `))
 }

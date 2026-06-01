@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { assignToPod } from "@/lib/pods"
-import { emailProfileComplete, emailPodAssigned } from "@/lib/email"
+import { emailProfileComplete } from "@/lib/email"
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -46,35 +46,15 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Assign to a pod if not already in one
-  let podCohort: number | null = null
+  // Assign to a pod silently — no email sent until pods are officially opened
   if (!member.podId) {
-    const podId = await assignToPod(member.id)
-    const pod = await prisma.pod.findUnique({
-      where: { id: podId },
-      include: { members: { select: { email: true, firstName: true } } },
-    })
-    if (pod) {
-      podCohort = pod.cohort
-      const names = pod.members.map((m) => m.firstName)
-      await Promise.all(
-        pod.members.map((m) =>
-          emailPodAssigned({
-            toEmail: m.email,
-            firstName: m.firstName,
-            cohort: pod.cohort,
-            podMemberNames: names,
-          })
-        )
-      )
-    }
+    await assignToPod(member.id)
   }
 
   // Profile complete email
   await emailProfileComplete({
     toEmail: session.user.email!,
     firstName: member.firstName,
-    podCohort,
   })
 
   return NextResponse.json({ ok: true })
