@@ -76,6 +76,8 @@ export default function ProfileForm({
   const [countrySearch, setCountrySearch] = useState("")
   const [countryOpen, setCountryOpen] = useState(false)
   const countryRef = useRef<HTMLDivElement>(null)
+  const [industrySearch, setIndustrySearch] = useState("")
+  const [industryOpen, setIndustryOpen] = useState(false)
 
   const [form, setForm] = useState({
     city: "",
@@ -180,16 +182,50 @@ export default function ProfileForm({
           </div>
           <div className={styles.field}>
             <label>Industry</label>
-            <select
-              className="form-select"
-              value={form.industry}
-              onChange={(e) => set("industry", e.target.value)}
-            >
-              <option value="">Select industry…</option>
-              {INDUSTRIES.map((i) => (
-                <option key={i}>{i}</option>
-              ))}
-            </select>
+            <div style={{ position: "relative" }}>
+              <input
+                className="form-input"
+                placeholder="Search industry…"
+                value={industryOpen ? industrySearch : form.industry}
+                autoComplete="off"
+                onFocus={() => { setIndustryOpen(true); setIndustrySearch("") }}
+                onChange={(e) => { setIndustrySearch(e.target.value); setIndustryOpen(true) }}
+                onBlur={() => setTimeout(() => {
+                  setIndustryOpen(false)
+                  if (!INDUSTRIES.includes(industrySearch) && industrySearch) setIndustrySearch("")
+                }, 150)}
+              />
+              {industryOpen && (
+                <div style={{
+                  position: "absolute", top: "100%", left: 0, right: 0, zIndex: 200,
+                  background: "var(--bg2)", border: "1px solid var(--border)",
+                  borderRadius: 4, maxHeight: 220, overflowY: "auto", marginTop: 2,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                }}>
+                  {INDUSTRIES.filter((i) =>
+                    i.toLowerCase().includes(industrySearch.toLowerCase())
+                  ).length === 0 ? (
+                    <div style={{ padding: "10px 14px", fontSize: 12, color: "var(--text-muted)" }}>No results</div>
+                  ) : INDUSTRIES.filter((i) =>
+                    i.toLowerCase().includes(industrySearch.toLowerCase())
+                  ).map((i) => (
+                    <div
+                      key={i}
+                      onMouseDown={() => { set("industry", i); setIndustrySearch(i); setIndustryOpen(false) }}
+                      style={{
+                        padding: "9px 14px", fontSize: 13, cursor: "pointer",
+                        background: form.industry === i ? "var(--bg3)" : "transparent",
+                        color: form.industry === i ? "var(--gold)" : "var(--text)",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg3)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = form.industry === i ? "var(--bg3)" : "transparent")}
+                    >
+                      {i}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className={styles.field}>
             <label>Short bio <span className={styles.optional}>(optional)</span></label>
