@@ -122,6 +122,7 @@ model CheckoutAttempt {
   status          String   @default("pending") // "pending" | "completed" | "cancelled" | "expired"
   amountCents     Int
   referredByCode  String?
+  discountSentAt  DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       where: { status: { in: ["cancelled", "expired", "pending"] } },
       orderBy: { createdAt: "desc" },
       take: 100,
-      select: { id: true, email: true, name: true, tier: true, status: true, amountCents: true, createdAt: true, referredByCode: true },
+      select: { id: true, email: true, name: true, tier: true, status: true, amountCents: true, createdAt: true, referredByCode: true, discountSentAt: true },
     }),
   ])
 

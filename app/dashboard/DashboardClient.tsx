@@ -135,6 +135,7 @@ export default function DashboardClient({
   type DroppedAttempt = {
     id: string; email: string; name: string; tier: string
     status: string; amountCents: number; createdAt: string; referredByCode: string | null
+    discountSentAt: string | null
   }
   type AnalyticsData = {
     totalViews: number; todayViews: number; week7Views: number; month30Views: number
@@ -147,6 +148,7 @@ export default function DashboardClient({
   }
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [discountSending, setDiscountSending] = useState<Record<string, boolean>>({})
 
   // Broadcast
   const [showMobileMore, setShowMobileMore] = useState(false)
@@ -1245,7 +1247,7 @@ export default function DashboardClient({
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                           <thead>
                             <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                              {["Name", "Email", "Tier", "Amount", "Status", "When"].map(h => (
+                              {["Name", "Email", "Tier", "Amount", "Status", "When", ""].map(h => (
                                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>{h}</th>
                               ))}
                             </tr>
@@ -1261,6 +1263,8 @@ export default function DashboardClient({
                                 const d = Math.floor(h / 24)
                                 return `${d}d ago`
                               })()
+                              const alreadySent = !!a.discountSentAt
+                              const sending = !!discountSending[a.id]
                               return (
                                 <tr key={a.id} style={{ borderBottom: "1px solid var(--border-dim)" }}>
                                   <td style={{ padding: "10px 14px", color: "var(--text)", fontWeight: 600 }}>{a.name || "—"}</td>
@@ -1273,6 +1277,39 @@ export default function DashboardClient({
                                     <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: statusColor }}>{a.status}</span>
                                   </td>
                                   <td style={{ padding: "10px 14px", color: "var(--text-muted)" }}>{ago}</td>
+                                  <td style={{ padding: "10px 14px" }}>
+                                    {alreadySent ? (
+                                      <span style={{ fontSize: 10, color: "var(--gold)", letterSpacing: "0.08em" }}>✓ Offer sent</span>
+                                    ) : (
+                                      <button
+                                        className="btn btn-outline"
+                                        style={{ padding: "5px 12px", fontSize: 10, whiteSpace: "nowrap" }}
+                                        disabled={sending}
+                                        onClick={async () => {
+                                          setDiscountSending(s => ({ ...s, [a.id]: true }))
+                                          const res = await fetch("/api/discount-offer", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ attemptId: a.id }),
+                                          })
+                                          if (res.ok) {
+                                            setAnalytics(prev => prev ? {
+                                              ...prev,
+                                              droppedAttempts: prev.droppedAttempts.map(x =>
+                                                x.id === a.id ? { ...x, discountSentAt: new Date().toISOString() } : x
+                                              )
+                                            } : prev)
+                                            showToast("Offer sent", `25% off email sent to ${a.email}`)
+                                          } else {
+                                            showToast("Error", "Could not send offer — try again")
+                                          }
+                                          setDiscountSending(s => ({ ...s, [a.id]: false }))
+                                        }}
+                                      >
+                                        {sending ? "Sending…" : "Send 25% off →"}
+                                      </button>
+                                    )}
+                                  </td>
                                 </tr>
                               )
                             })}

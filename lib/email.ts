@@ -160,7 +160,48 @@ export async function emailPostResponse({ toEmail, toName, fromName, postTitle, 
   `))
 }
 
-// ── 5. Owner message notification ─────────────────────────────────────────
+// ── 5. Discount offer — 25% off for checkout drop-offs ────────────────────
+export async function emailDiscountOffer({ toEmail, firstName, tier, originalAmount, discountedAmount, checkoutUrl }: {
+  toEmail: string
+  firstName: string
+  tier: string
+  originalAmount: number
+  discountedAmount: number
+  checkoutUrl: string
+}) {
+  const isMichael = tier === "MICHAEL"
+  await send(toEmail, `${firstName}, your spot is still here — and we made it easier.`, wrapper(`
+    <h1 style="margin:0 0 8px;font-size:28px;font-weight:300;color:${TEXT};font-family:Georgia,serif;">
+      Your spot is still here,<br><span style="color:${GOLD};">${firstName}.</span>
+    </h1>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      You came close. We noticed you stopped just before the door.
+    </p>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      ${isMichael
+        ? "This house was built for people who carry that name. It was built for you."
+        : "You were drawn here for a reason. That matters."}
+      We want to make it easier to get in — so we're holding your spot with a one-time offer.
+    </p>
+    <div style="margin:24px 0;padding:20px 24px;background:#0a0a08;border:1px solid #2a2010;border-radius:4px;text-align:center;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#7a7570;margin-bottom:12px;">Your offer</div>
+      <div style="display:flex;align-items:baseline;justify-content:center;gap:12px;margin-bottom:8px;">
+        <span style="font-size:18px;color:#3a3530;text-decoration:line-through;">\$${originalAmount}</span>
+        <span style="font-size:36px;font-weight:700;color:${GOLD};">\$${discountedAmount}</span>
+      </div>
+      <div style="font-size:11px;color:#7a7570;letter-spacing:0.05em;">25% off · one-time · lifetime access</div>
+    </div>
+    <p style="margin:16px 0;font-size:13px;color:#7a7570;line-height:1.7;">
+      This link is just for you. It expires — so don't sit on it.
+    </p>
+    ${btn("Claim your spot →", checkoutUrl)}
+    <p style="margin:24px 0 0;font-size:11px;color:#3a3530;line-height:1.6;">
+      One house. One name. For life.
+    </p>
+  `))
+}
+
+// ── 6. Owner message notification ─────────────────────────────────────────
 export async function emailOwnerMessage({ fromName, fromEmail, subject, message }: {
   fromName: string
   fromEmail: string
